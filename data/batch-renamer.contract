@@ -2,5 +2,5 @@
 Name=Bulk Rename
 Description=Rename Files
 MimeType=image;audio;video;text;application;
-Exec=batch-renamer %F
+Exec=bulk-renamer %F
 Gettext-Domain=pantheon-files
