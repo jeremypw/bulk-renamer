@@ -69,6 +69,7 @@ public class BatchRenamer : Gtk.Box {
 				name_switch.hide();
 			}
 			else if(naming_combo.get_active() == 4) {
+			    name_switch.set_active(true);
 				name_entry.placeholder_text = "Search for";
 				number_entry.placeholder_text = "Replace with";
 				name_entry.text = "";
