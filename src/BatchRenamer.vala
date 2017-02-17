@@ -69,7 +69,7 @@ public class BatchRenamer : Gtk.Box {
 				name_switch.hide();
 			}
 			else if(naming_combo.get_active() == 4) {
-			    name_switch.set_active(true);
+				name_switch.set_active(true);
 				name_entry.placeholder_text = "Search for";
 				number_entry.placeholder_text = "Replace with";
 				name_entry.text = "";
@@ -102,6 +102,14 @@ public class BatchRenamer : Gtk.Box {
 				name_entry.text = "";
 			}
 		});
+		var old_scrolled_window = new Gtk.ScrolledWindow(null, null);
+		old_scrolled_window.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.AUTOMATIC);
+        old_scrolled_window.add(old_file_names);
+        old_scrolled_window.set_min_content_height(300);
+		var new_scrolled_window = new Gtk.ScrolledWindow(null, null);
+        new_scrolled_window.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.AUTOMATIC);
+    	new_scrolled_window.add(new_file_names);
+        new_scrolled_window.set_min_content_height(300);
 		preview_button = new Gtk.Button.with_label ("Update Preview");
 		preview_button.get_style_context ().add_class (Gtk.STYLE_CLASS_SUGGESTED_ACTION);
 		controls.pack_start (naming_label,false,false,0);
@@ -110,8 +118,8 @@ public class BatchRenamer : Gtk.Box {
 		buttons.pack_end (preview_button, false,false,0);
 		controls.pack_end (naming_combo, false,false,0);
 		controls.pack_end (number_entry, true, false, 0);
-		lists.pack_start (old_file_names, true, true, 0);
-		lists.pack_end (new_file_names, true, true, 0);
+		lists.pack_start (old_scrolled_window, true, true, 0);
+		lists.pack_end (new_scrolled_window, true, true, 0);
 		this.pack_start (controls, false, false, 0);
 		this.pack_start (lists, true, true, 0);
 		this.pack_start (buttons,true,false,0);
@@ -212,7 +220,7 @@ public class BatchRenamer : Gtk.Box {
 			    }
 				break;
 			case  3:
-			    var dt = new GLib.DateTime.now_local ();
+				var dt = new GLib.DateTime.now_local ();
 				for (int i = 0; i < input_files.length; i++) {
 					index_of_char = input_files.index(i).last_index_of_char('.',0);
 					extension = input_files.index(i).slice(index_of_char, input_files.index(i).length);
@@ -224,7 +232,7 @@ public class BatchRenamer : Gtk.Box {
 					}
 				break;
 			case 4:
-			    if(name_entry.get_text() == ""){
+				if(name_entry.get_text() == ""){
 					for (int i = 0; i < input_files.length; i++) {
 						new_list.append(out iter);
 						file_name = input_files.index(i);
