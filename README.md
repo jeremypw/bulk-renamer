@@ -3,13 +3,13 @@ File bulk renamer contractor plugin for Pantheon files.
 
 Currently supports adding numbers with or without renaming files, appending the date, and search and replace.
 [![License: GPL v3](https://img.shields.io/badge/License-GPL%20v3-blue.svg)](http://www.gnu.org/licenses/gpl-3.0)
-![Screenshot](/Screenshot.png?raw=true "Screenshot")
+![Screenshot](/data/Screenshot.png?raw=true "Screenshot")
 
 ### Dependencies
 These dependencies must be present before building
  - `valac`
  - `meson`
- -  glib-2.0
+ - `glib-2.0`
  - `gtk+-3.0`
 
  You can install these on a Ubuntu-based system by executing this command:
