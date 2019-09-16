@@ -6,7 +6,7 @@ class Window : Gtk.Window {
 		this.set_resizable(false);
 		this.set_position ( Gtk.WindowPosition.CENTER );
 		this.title="Batch Renamer";
-		BatchRenamer Renamer = new BatchRenamer(args);
+		BulkRenamer Renamer = new BulkRenamer(args);
 		this.add(Renamer);
 		var buttons = new Gtk.Box (Gtk.Orientation.HORIZONTAL, window_width);
 		Gtk.Button cancel_button = new Gtk.Button.with_label ("Cancel");
