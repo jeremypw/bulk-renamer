@@ -21,7 +21,7 @@
  *
 */
 
-public class BulkRenamer : Gtk.Box {
+public class Renamer : Gtk.Box {
     private Gtk.TreeView old_file_names;
     private Gtk.TreeView new_file_names;
     private Gtk.Entry name_entry;
@@ -31,42 +31,27 @@ public class BulkRenamer : Gtk.Box {
     private Gtk.ListStore new_list;
     private Gtk.TreeIter iter;
     private string directory;
-    private Array<string> input_files = new Array<string> ();
+    private Gee.HashMap<string, File> file_map;
     private int naming_offset;
-    private Array<string> output_files = new Array<string> ();
     private Gtk.Switch name_switch;
 
     public Gtk.Button preview_button { get; construct; }
 
-    public BulkRenamer (string[] files) {
+    public Renamer (File[]? files = null) {
         Object (orientation: Gtk.Orientation.VERTICAL,
                 spacing: 12,
                 border_width: 18
        );
 
-        int i = 0;
-        int directory_index = 0;
-        foreach (string fn in files) {
-            if (i == 0) {
-                i++;
-                continue;
-            }
-
-            if (i == 1) {
-                directory_index = fn.last_index_of_char ('/', 0);
-            }
-
-            directory = fn.slice (0, directory_index + 1);
-            var basename = fn.slice (directory_index + 1, fn.length);
-            input_files.append_val (basename);
-            old_list.append (out iter);
-            old_list.set (iter, 0, basename);
-
-            i++;
+        if (files != null) {
+            add_files (files);
         }
     }
 
     construct {
+        file_map = new Gee.HashMap<string, File> ();
+        directory = "";
+
         var controls = new Gtk.Box (Gtk.Orientation.HORIZONTAL, 12);
         var lists = new Gtk.Box (Gtk.Orientation.HORIZONTAL, 12);
         var buttons = new Gtk.Box (Gtk.Orientation.HORIZONTAL, 12);
@@ -172,142 +157,108 @@ public class BulkRenamer : Gtk.Box {
         pack_start (buttons, true, false, 0);
     }
 
-    public void rename_files () {
-        for (int i = 0; i < input_files.length; i++) {
-            var file = File.new_for_path (directory.concat (input_files.index (i)));
-            try {
-                file.set_display_name (output_files.index (i));
-            } catch (Error e) {
-                stdout.printf ("File %s not found\n", input_files.index (i));
+    public void add_files (File[] files) {
+        if (files.length < 1 || files[0] == null) {
+            return;
+        }
+
+        if (directory == "") {
+            directory = Path.get_dirname (files[0].get_path ());
+        }
+
+        foreach (File f in files) {
+            var path = f.get_path ();
+            var dir = Path.get_dirname (path);
+            if (dir == directory) {
+                var basename = Path.get_basename (path);
+                file_map.@set (basename, f);
+                old_list.append (out iter);
+                old_list.set (iter, 0, basename);
             }
         }
     }
 
-    public void update_view () {
-        int index_of_char;
-        string extension, file_name, base_no_extension;
+    public void rename_files () throws GLib.Error {
+        old_list.@foreach ((m, p, i) => {
+            string input_name, output_name;
+            old_list.@get (i, 0, out input_name);
+            new_list.@get (i, 0, out output_name);
+            var file = file_map.@get (input_name);
+            if (file != null) {
+                try {
+                    file.set_display_name (output_name);
+                } catch (GLib.Error e) {
+                    return true;
+                }
+            }
 
-        output_files.remove_range (0, output_files.length);
+            return false;
+        });
+    }
+
+    public void update_view () {
         if (number_entry.get_text () != "") {
             naming_offset = int.parse (number_entry.get_text ()) - 1;
+        } else {
+            naming_offset = 0;
         }
 
         preview_button.get_style_context ().remove_class (Gtk.STYLE_CLASS_SUGGESTED_ACTION);
         new_list.clear ();
 
-        switch (naming_combo.get_active ()) {
-            case 0:
-                for (int i = 0; i < input_files.length; i++) {
-                    index_of_char = input_files.index (i).last_index_of_char ('.', 0);
-                    extension = input_files.index (i).slice (index_of_char, input_files.index (i).length);
-                    new_list.append (out iter);
+        var name_root = name_switch.active ? name_entry.get_text () : "";
+        bool use_name_root = name_root.length > 0;
+        int index = naming_offset;
 
-                    if (name_entry.get_text () == "" && !name_switch.active) {
-                        base_no_extension = input_files.index (i).slice (0, index_of_char);
-                        file_name = base_no_extension.concat ((i + 1 + naming_offset).to_string (), extension);
-                    } else {
-                        file_name = name_entry.get_text ().concat ((i + 1 + naming_offset).to_string (), extension);
-                    }
+        old_list.@foreach ((m, p, i) => {
+            string index_string = "";
 
-                    new_list.set (iter, 0, file_name);
-                    output_files.append_val (file_name);
+            switch (naming_combo.get_active ()) {
+                case 0: // "1,2,3…"
+                    index_string = index.to_string ();
+                    break;
+                case 1: // "01,02,03…"
+                    index_string = "%02d".printf (index);
+                    break;
+                case 2: // "001,002,003…"
+                    index_string = "%03d".printf (index);
+                    break;
+                case 3: // "001,002,003…"
+                    var dt = new GLib.DateTime.now_local ();
+                    index_string = dt.format ("-%Y-%m-%d");
+                    break;
+                case 4: //Search and Replace
+                    break;
+
+                default:
+                    break;
+            }
+
+            string output_name;
+            m.@get (i, 0, out output_name);
+
+            if (index_string != "") {
+                if (use_name_root) {
+                    output_name = name_root;
                 }
 
-                break;
-            case 1:
-                for (int i = 0; i < input_files.length; i++) {
-                    index_of_char = input_files.index (i).last_index_of_char ('.', 0);
-                    extension = input_files.index (i).slice (index_of_char, input_files.index (i).length);
-                    new_list.append (out iter);
-
-                    if (name_entry.get_text () == "" && !name_switch.active) {
-                        base_no_extension = input_files.index (i).slice (0, index_of_char);
-                        if (i + naming_offset < 9) {
-                            file_name = base_no_extension.concat ("0", (i + 1 + naming_offset).to_string (), extension);
-                        } else {
-                            file_name = base_no_extension.concat ((i + 1 + naming_offset).to_string (), extension);
-                        }
-                    } else {
-                        if (i + naming_offset < 9) {
-                            file_name = name_entry.get_text ().concat ("0", (i + 1 + naming_offset).to_string (), extension);
-                        } else {
-                            file_name = name_entry.get_text ().concat ((i + 1 + naming_offset).to_string (), extension);
-                        }
-                    }
-
-                    new_list.set (iter, 0, file_name);
-                    output_files.append_val (file_name);
+                StringBuilder sb = new StringBuilder (output_name);
+                var extension_pos = output_name.last_index_of_char ('.', 0);
+                if (extension_pos < output_name.length - 4) {
+                    extension_pos = output_name.length - 1;
                 }
 
-                break;
-            case 2:
-                for (int i = 0; i < input_files.length; i++) {
-                    index_of_char = input_files.index (i).last_index_of_char ('.', 0);
-                    extension = input_files.index (i).slice (index_of_char, input_files.index (i).length);
-                    new_list.append (out iter);
+                sb.insert (extension_pos + 1, index_string);
+                output_name = sb.str;
+            } else {
+                m.@get (i, 0, out output_name);
+                output_name = output_name.replace (name_entry.get_text (), number_entry.get_text ());
+            }
 
-                    if (name_entry.get_text () == "" && !name_switch.active) {
-                        base_no_extension = input_files.index (i).slice (0, index_of_char);
-                        if (i + naming_offset < 9) {
-                            file_name = base_no_extension.concat ("00", (i + 1 + naming_offset).to_string (), extension);
-                        } else if (i + naming_offset < 99) {
-                            file_name = base_no_extension.concat ("0", (i + 1 + naming_offset).to_string (), extension);
-                        } else {
-                            file_name = base_no_extension.concat ((i + 1 + naming_offset).to_string (), extension);
-                        }
-                    } else {
-                        if (i + naming_offset < 9) {
-                            file_name = name_entry.get_text ().concat ("00", (i + 1 + naming_offset).to_string (), extension);
-                        } else if (i + naming_offset < 99) {
-                            file_name = name_entry.get_text ().concat ("0", (i + 1 + naming_offset).to_string (), extension);
-                        } else {
-                            file_name = name_entry.get_text ().concat ((i + 1 + naming_offset).to_string (), extension);
-                        }
-                    }
-
-                    new_list.set (iter, 0, file_name);
-                    output_files.append_val (file_name);
-                }
-
-                break;
-            case 3:
-                var dt = new GLib.DateTime.now_local ();
-
-                for (int i = 0; i < input_files.length; i++) {
-                    index_of_char = input_files.index (i).last_index_of_char ('.', 0);
-                    extension = input_files.index (i).slice (index_of_char, input_files.index (i).length);
-                    base_no_extension = input_files.index (i).slice (0, index_of_char);
-                    new_list.append (out iter);
-                    file_name = base_no_extension.concat (dt.format ("-%Y-%m-%d"), extension);
-                    new_list.set (iter, 0, file_name);
-                    output_files.append_val (file_name);
-                }
-
-                break;
-            case 4:
-                if (name_entry.get_text () == "") {
-                    for (int i = 0; i < input_files.length; i++) {
-                        new_list.append (out iter);
-                        file_name = input_files.index (i);
-                        new_list.set (iter, 0, file_name);
-                        output_files.append_val (file_name);
-                    }
-                } else {
-                    for (int i = 0; i < input_files.length; i++) {
-                        index_of_char = input_files.index (i).last_index_of_char ('.', 0);
-                        extension = input_files.index (i).slice (index_of_char, input_files.index (i).length);
-                        base_no_extension = input_files.index (i).slice (0, index_of_char);
-                        base_no_extension = base_no_extension.replace (name_entry.get_text (), number_entry.get_text ());
-                        new_list.append (out iter);
-                        file_name = base_no_extension.concat (extension);
-                        new_list.set (iter, 0, file_name);
-                        output_files.append_val (file_name);
-                    }
-                }
-
-                break;
-            default:
-                break;
-        }
+            new_list.append (out iter);
+            new_list.set (iter, 0, output_name);
+            index++;
+            return false;
+        });
     }
 }

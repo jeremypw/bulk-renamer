@@ -21,22 +21,23 @@
  *
 */
 
-public class RenamerWindow : Gtk.ApplicationWindow {
+public class BulkRenamer.Window : Gtk.ApplicationWindow {
     private const int WIDTH = 200;
     private const int HEIGHT = 400;
-    public string[] paths { get; construct; }
+    private Renamer renamer;
 
-    public RenamerWindow (string[] paths) {
-        Object (paths: paths);
+    public Window (Gtk.Application app) {
+        Object (
+            application: app
+        );
     }
 
     construct {
         set_default_size (WIDTH, HEIGHT);
         set_resizable (false);
         set_position ( Gtk.WindowPosition.CENTER );
-        get_style_context ().add_class ("rounded");
 
-        var renamer = new BulkRenamer (paths);
+        renamer = new Renamer ();
         add (renamer);
 
         var cancel_button = new Gtk.Button.with_label (_("Cancel"));
@@ -56,32 +57,28 @@ public class RenamerWindow : Gtk.ApplicationWindow {
         headerbar.set_custom_title (buttons);
         set_titlebar (headerbar);
 
-        destroy.connect ( Gtk.main_quit );
-
         cancel_button.clicked.connect (() => {
             destroy ();
         });
 
         rename_button.clicked.connect (() => {
-            renamer.rename_files ();
-            destroy ();
+            try {
+                renamer.rename_files ();
+                destroy ();
+            } catch (Error e) {
+                var dlg = new Granite.MessageDialog ("Error renaming files", e.message, new ThemedIcon ("dialog-error"));
+                dlg.run ();
+                dlg.destroy ();
+            }
         });
 
         renamer.preview_button.clicked.connect (() => {
             renamer.update_view ();
             rename_button.set_sensitive (true);
         });
-
-        show_all ();
     }
 
-    public static int main (string[] args) {
-        Gtk.init (ref args);
-
-        /* TODO - validate args - check is an array of paths */
-        new RenamerWindow (args);
-
-        Gtk.main ();
-        return 0;
+    public void set_files (File[] files) {
+        renamer.add_files (files);
     }
 }
