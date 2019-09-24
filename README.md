@@ -1,5 +1,7 @@
 # Bulk-renamer
-File bulk renamer contractor plugin for Pantheon files.
+Bulk file renamer providing a contractor plugin for Pantheon Files, the elementaryos file browser.
+It may also be used as a stand-alone app or from the commandline.
+
 It is based on the work of Vartan Belavejian <https://github.com/VartanBelavejian/ElementaryBulkRenamer>
 
 Currently supports three different rename modes:
