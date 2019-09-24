@@ -2,7 +2,13 @@
 File bulk renamer contractor plugin for Pantheon files.
 It is based on the work of Vartan Belavejian <https://github.com/VartanBelavejian/ElementaryBulkRenamer>
 
-Currently supports adding numbers with or without renaming files, appending the date, and search and replace.
+Currently supports three different rename modes:
+* adding numbers to the original name or to a new base.
+* appending the date to the original name
+* search and replace.
+
+The file extension is excluded from renaming.
+
 [![License: GPL v3](https://img.shields.io/badge/License-GPL%20v3-blue.svg)](http://www.gnu.org/licenses/gpl-3.0)
 ![Screenshot](/data/Screenshot.png?raw=true "Screenshot")
 
