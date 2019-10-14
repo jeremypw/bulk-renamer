@@ -35,9 +35,8 @@ public class Renamer : Gtk.Grid {
     private int naming_offset;
     private Gtk.Switch name_switch;
     private Gtk.Label name_switch_label;
-    private Gtk.Button preview_button;
 
-    public bool can_rename { get; set; default = false; }
+    public bool can_rename { get; set; }
     public string directory { get; private set; default = ""; }
 
     public Renamer (File[]? files = null) {
@@ -47,6 +46,7 @@ public class Renamer : Gtk.Grid {
     }
 
     construct {
+        can_rename = false;
         orientation = Gtk.Orientation.VERTICAL;
         row_spacing = 18;
 
@@ -61,20 +61,7 @@ public class Renamer : Gtk.Grid {
         name_switch = new Gtk.Switch ();
         name_switch_label = new Gtk.Label (_("Set base name:"));
         name_switch_label.valign = Gtk.Align.CENTER;
-
-        name_switch.notify["active"].connect (() => {
-            can_rename = false;
-            if (name_switch.active) {
-                name_entry.set_sensitive (true);
-                name_entry.placeholder_text = _("Enter naming scheme");
-            } else {
-                name_entry.set_sensitive (false);
-                name_entry.placeholder_text = "";
-                name_entry.text = "";
-            }
-        });
-
-        name_switch.active = true;
+        name_switch.active = false;
 
         number_entry = new Gtk.Entry ();
         number_entry.placeholder_text = _("Start from");
@@ -86,8 +73,6 @@ public class Renamer : Gtk.Grid {
         naming_combo.append_text (_("Current Date"));
         naming_combo.append_text (_("Search and Replace"));
         naming_combo.active = 0;
-
-        naming_combo.changed.connect (change_rename_mode);
 
         var cell = new Gtk.CellRendererText ();
         old_list = new Gtk.ListStore (1, typeof (string));
@@ -108,10 +93,6 @@ public class Renamer : Gtk.Grid {
         new_scrolled_window.add (new_file_names);
         new_scrolled_window.set_min_content_height (300);
 
-        preview_button = new Gtk.Button.with_label (_("Update Preview"));
-        preview_button.get_style_context ().add_class (Gtk.STYLE_CLASS_SUGGESTED_ACTION);
-        preview_button.clicked.connect (update_view);
-
         var controls = new Gtk.Box (Gtk.Orientation.HORIZONTAL, 18);
         controls.margin_top = row_spacing - margin_top;
         controls.pack_start (name_switch_label);
@@ -125,20 +106,47 @@ public class Renamer : Gtk.Grid {
         lists.pack_start (old_scrolled_window);
         lists.pack_end (new_scrolled_window);
 
-        var buttons = new Gtk.Box (Gtk.Orientation.HORIZONTAL, 18);
-        buttons.pack_end (preview_button, false, false, 0);
-
         add (controls);
         add (lists);
-        add (buttons);
+
+        naming_combo.changed.connect (change_rename_mode);
+
+        name_switch.notify["active"].connect (() => {
+            if (name_switch.active) {
+                name_entry.set_sensitive (true);
+                name_entry.placeholder_text = _("Enter naming scheme");
+            } else {
+                name_entry.set_sensitive (false);
+                name_entry.placeholder_text = "";
+                name_entry.text = "";
+            }
+
+            update_view ();
+        });
+
+        name_entry.focus_out_event.connect (() => {
+            update_view ();
+            return Gdk.EVENT_PROPAGATE;
+        });
+
+        name_entry.activate.connect (() => {
+            update_view ();
+        });
+
+        number_entry.focus_out_event.connect (() => {
+            update_view ();
+            return Gdk.EVENT_PROPAGATE;
+        });
+
+        number_entry.activate.connect (() => {
+            update_view ();
+        });
     }
 
     public void add_files (File[] files) {
         if (files.length < 1 || files[0] == null) {
             return;
         }
-
-        can_rename = false;
 
         if (directory == "") {
             directory = Path.get_dirname (files[0].get_path ());
@@ -155,6 +163,8 @@ public class Renamer : Gtk.Grid {
                 old_list.set (iter, 0, basename);
             }
         }
+
+        update_view ();
     }
 
     public void rename_files () throws GLib.Error {
@@ -191,13 +201,14 @@ public class Renamer : Gtk.Grid {
     }
 
     public void update_view () {
+        can_rename = true;
+
         if (number_entry.get_text () != "") {
             naming_offset = int.parse (number_entry.get_text ()) - 1;
         } else {
             naming_offset = 0;
         }
 
-        preview_button.get_style_context ().remove_class (Gtk.STYLE_CLASS_SUGGESTED_ACTION);
         new_list.clear ();
 
         var name_root = name_switch.active ? name_entry.get_text () : "";
@@ -230,39 +241,42 @@ public class Renamer : Gtk.Grid {
             }
 
             string output_name;
-            old_list.@get (i, 0, out output_name);
+            string input_name;
+            old_list.@get (i, 0, out input_name);
 
             if (index_string != "") {
                 if (use_name_root) {
-                    output_name = name_root;
+                    input_name = name_root;
                 }
 
-                StringBuilder sb = new StringBuilder (output_name);
-                var extension_pos = output_name.last_index_of_char ('.', 0);
-                if (extension_pos < output_name.length - 4) {
-                    extension_pos = output_name.length - 1;
+                StringBuilder sb = new StringBuilder (input_name);
+                var extension_pos = input_name.last_index_of_char ('.', 0);
+                if (extension_pos < input_name.length - 4) {
+                    extension_pos = input_name.length - 1;
                 }
 
                 sb.insert (extension_pos + 1, index_string);
                 output_name = sb.str;
             } else { // Search and replace
-                old_list.@get (i, 0, out output_name);
-                output_name = output_name.replace (name_entry.get_text (), number_entry.get_text ());
+                old_list.@get (i, 0, out input_name);
+                output_name = input_name.replace (name_entry.get_text (), number_entry.get_text ());
             }
 
             new_list.append (out iter);
             new_list.set (iter, 0, output_name);
+
+            if (output_name.strip () == "" || output_name == input_name) {
+                can_rename = false;
+                /* TODO Visual indication of problem output name */
+            }
+
             index++;
 
             return false;
         });
-
-        can_rename = true;
     }
 
     public void change_rename_mode () {
-        can_rename = false;
-
         if (naming_combo.get_active () == 3) {
             number_entry.hide ();
             name_switch_label.hide ();
@@ -291,5 +305,7 @@ public class Renamer : Gtk.Grid {
             name_entry.show ();
             name_switch.show ();
         }
+
+        update_view ();
     }
 }

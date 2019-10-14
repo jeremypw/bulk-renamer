@@ -35,16 +35,32 @@ public class BulkRenamer.Window : Gtk.ApplicationWindow {
     construct {
         renamer = new Renamer ();
         renamer.margin = 6;
-        add (renamer);
 
         var cancel_button = new Gtk.Button.with_label (_("Cancel"));
-        cancel_button.clicked.connect (() => {
-            destroy ();
-        });
+        cancel_button.margin = 3;
 
         var rename_button = new Gtk.Button.with_label (_("Rename"));
-        renamer.bind_property ("can_rename", rename_button, "sensitive", GLib.BindingFlags.BIDIRECTIONAL);
+        rename_button.margin = 3;
+        rename_button.sensitive = false;
+        renamer.bind_property ("can-rename", rename_button, "sensitive", GLib.BindingFlags.DEFAULT);
         rename_button.get_style_context ().add_class (Gtk.STYLE_CLASS_SUGGESTED_ACTION);
+        
+        var bbox = new Gtk.ButtonBox (Gtk.Orientation.HORIZONTAL);
+        bbox.set_layout (Gtk.ButtonBoxStyle.END);
+        bbox.add (cancel_button);
+        bbox.add (rename_button);
+
+        var headerbar = new Gtk.HeaderBar ();
+        headerbar.set_title ("Bulk Rename");
+        set_titlebar (headerbar);
+
+        var grid = new Gtk.Grid ();
+        grid.orientation = Gtk.Orientation.VERTICAL;
+        grid.add (renamer);
+        grid.add (bbox);
+
+        add (grid);
+        show_all ();
 
         rename_button.clicked.connect (() => {
             try {
@@ -56,11 +72,9 @@ public class BulkRenamer.Window : Gtk.ApplicationWindow {
             }
         });
 
-        var headerbar = new Gtk.HeaderBar ();
-        headerbar.set_title ("Bulk Rename");
-        headerbar.pack_start (cancel_button);
-        headerbar.pack_end (rename_button);
-        set_titlebar (headerbar);
+        cancel_button.clicked.connect (() => {
+            destroy ();
+        });
     }
 
     public void set_files (File[] files) {
