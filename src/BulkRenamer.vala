@@ -21,104 +21,49 @@
  *
 */
 
-public class Renamer : Gtk.Box {
+public class Renamer : Gtk.Grid {
+    private Gee.HashMap<string, File> file_map;
+
     private Gtk.TreeView old_file_names;
     private Gtk.TreeView new_file_names;
+    private Gtk.ListStore old_list;
+    private Gtk.ListStore new_list;
+
     private Gtk.Entry name_entry;
     private Gtk.Entry number_entry;
     private Gtk.ComboBoxText naming_combo;
-    private Gtk.ListStore old_list;
-    private Gtk.ListStore new_list;
-    private Gtk.TreeIter iter;
-    private string directory;
-    private Gee.HashMap<string, File> file_map;
     private int naming_offset;
     private Gtk.Switch name_switch;
+    private Gtk.Label name_switch_label;
+    private Gtk.Button preview_button;
 
-    public Gtk.Button preview_button { get; construct; }
+    public bool can_rename { get; set; default = false; }
+    public string directory { get; private set; default = ""; }
 
     public Renamer (File[]? files = null) {
-        Object (orientation: Gtk.Orientation.VERTICAL,
-                spacing: 12,
-                border_width: 18
-       );
-
         if (files != null) {
             add_files (files);
         }
     }
 
     construct {
+        orientation = Gtk.Orientation.VERTICAL;
+        row_spacing = 18;
+
         file_map = new Gee.HashMap<string, File> ();
         directory = "";
 
-        var controls = new Gtk.Box (Gtk.Orientation.HORIZONTAL, 12);
-        var lists = new Gtk.Box (Gtk.Orientation.HORIZONTAL, 12);
-        var buttons = new Gtk.Box (Gtk.Orientation.HORIZONTAL, 12);
         naming_offset = 0;
 
         name_entry = new Gtk.Entry ();
         name_entry.placeholder_text = _("Enter naming scheme");
 
         name_switch = new Gtk.Switch ();
-        name_switch.active = true;
-
-        number_entry = new Gtk.Entry ();
-        number_entry.placeholder_text = _("Start from");
-
-        var naming_label = new Gtk.Label (_("Naming:"));
-
-        naming_combo = new Gtk.ComboBoxText ();
-        naming_combo.append_text (_("1,2,3…"));
-        naming_combo.append_text (_("01,02,03…"));
-        naming_combo.append_text (_("001,002,003…"));
-        naming_combo.append_text (_("Current Date"));
-        naming_combo.append_text (_("Search and Replace"));
-        naming_combo.active = 0;
-
-        var cell = new Gtk.CellRendererText ();
-        old_list = new Gtk.ListStore (1, typeof (string));
-        old_file_names = new Gtk.TreeView.with_model (old_list);
-        old_file_names.insert_column_with_attributes (-1, _("Old Name"), cell, "text", 0);
-        old_file_names.get_column (0).max_width = 50;
-
-        new_list = new Gtk.ListStore (1, typeof (string));
-        new_file_names = new Gtk.TreeView.with_model (new_list);
-        new_file_names.insert_column_with_attributes (-1, _("New Name"), cell, "text", 0);
-        new_file_names.get_column (0).max_width = 50;
-
-        naming_combo.changed.connect (() => {
-            if (naming_combo.get_active () == 3) {
-                number_entry.hide ();
-                naming_label.hide ();
-                name_entry.hide ();
-                name_switch.hide ();
-            } else if (naming_combo.get_active () == 4) {
-                name_switch.set_active (true);
-                name_entry.placeholder_text = _("Search for");
-                number_entry.placeholder_text = _("Replace with");
-                name_entry.text = "";
-                number_entry.text = "";
-                name_entry.show ();
-                number_entry.show ();
-                naming_label.show ();
-                name_switch.hide ();
-            } else {
-                if (name_entry.placeholder_text != _("Enter naming scheme")) {
-                    name_entry.placeholder_text = _("Enter naming scheme");
-                    number_entry.placeholder_text = _("Start from");
-                    name_entry.text = "";
-                    number_entry.text = "";
-                }
-
-                number_entry.show ();
-                naming_label.show ();
-                name_entry.show ();
-                name_switch.show ();
-            }
-        });
+        name_switch_label = new Gtk.Label (_("Set base name:"));
+        name_switch_label.valign = Gtk.Align.CENTER;
 
         name_switch.notify["active"].connect (() => {
+            can_rename = false;
             if (name_switch.active) {
                 name_entry.set_sensitive (true);
                 name_entry.placeholder_text = _("Enter naming scheme");
@@ -128,6 +73,30 @@ public class Renamer : Gtk.Box {
                 name_entry.text = "";
             }
         });
+
+        name_switch.active = true;
+
+        number_entry = new Gtk.Entry ();
+        number_entry.placeholder_text = _("Start from");
+
+        naming_combo = new Gtk.ComboBoxText ();
+        naming_combo.append_text (_("1,2,3…"));
+        naming_combo.append_text (_("01,02,03…"));
+        naming_combo.append_text (_("001,002,003…"));
+        naming_combo.append_text (_("Current Date"));
+        naming_combo.append_text (_("Search and Replace"));
+        naming_combo.active = 0;
+
+        naming_combo.changed.connect (change_rename_mode);
+
+        var cell = new Gtk.CellRendererText ();
+        old_list = new Gtk.ListStore (1, typeof (string));
+        old_file_names = new Gtk.TreeView.with_model (old_list);
+        old_file_names.insert_column_with_attributes (-1, _("Old Name"), cell, "text", 0);
+
+        new_list = new Gtk.ListStore (1, typeof (string));
+        new_file_names = new Gtk.TreeView.with_model (new_list);
+        new_file_names.insert_column_with_attributes (-1, _("New Name"), cell, "text", 0);
 
         var old_scrolled_window = new Gtk.ScrolledWindow (null, null);
         old_scrolled_window.set_policy (Gtk.PolicyType.NEVER, Gtk.PolicyType.AUTOMATIC);
@@ -141,20 +110,27 @@ public class Renamer : Gtk.Box {
 
         preview_button = new Gtk.Button.with_label (_("Update Preview"));
         preview_button.get_style_context ().add_class (Gtk.STYLE_CLASS_SUGGESTED_ACTION);
+        preview_button.clicked.connect (update_view);
 
-        controls.pack_start (naming_label, false, false, 0);
-        controls.pack_start (name_switch, false, false, 0);
-        controls.pack_start (name_entry, true, false, 0);
-        buttons.pack_end (preview_button, false , false, 0);
-        controls.pack_end (naming_combo, false, false, 0);
-        controls.pack_end (number_entry, true, false, 0);
+        var controls = new Gtk.Box (Gtk.Orientation.HORIZONTAL, 18);
+        controls.margin_top = row_spacing - margin_top;
+        controls.pack_start (name_switch_label);
+        controls.pack_start (name_switch);
+        controls.pack_start (name_entry);
 
-        lists.pack_start (old_scrolled_window, true, true, 0);
-        lists.pack_end (new_scrolled_window, true, true, 0);
+        controls.pack_end (naming_combo);
+        controls.pack_end (number_entry);
 
-        pack_start (controls, false, false, 0);
-        pack_start (lists, true, true, 0);
-        pack_start (buttons, true, false, 0);
+        var lists = new Gtk.Box (Gtk.Orientation.HORIZONTAL, 18);
+        lists.pack_start (old_scrolled_window);
+        lists.pack_end (new_scrolled_window);
+
+        var buttons = new Gtk.Box (Gtk.Orientation.HORIZONTAL, 18);
+        buttons.pack_end (preview_button, false, false, 0);
+
+        add (controls);
+        add (lists);
+        add (buttons);
     }
 
     public void add_files (File[] files) {
@@ -162,10 +138,13 @@ public class Renamer : Gtk.Box {
             return;
         }
 
+        can_rename = false;
+
         if (directory == "") {
             directory = Path.get_dirname (files[0].get_path ());
         }
 
+        Gtk.TreeIter? iter = null;
         foreach (File f in files) {
             var path = f.get_path ();
             var dir = Path.get_dirname (path);
@@ -179,21 +158,36 @@ public class Renamer : Gtk.Box {
     }
 
     public void rename_files () throws GLib.Error {
+        if (!can_rename) {
+            return;
+        }
+
         old_list.@foreach ((m, p, i) => {
             string input_name, output_name;
+            File? result = null;
             old_list.@get (i, 0, out input_name);
             new_list.@get (i, 0, out output_name);
             var file = file_map.@get (input_name);
             if (file != null) {
                 try {
-                    file.set_display_name (output_name);
+                    result = file.set_display_name (output_name);
                 } catch (GLib.Error e) {
                     return true;
                 }
             }
 
+            if (result != null) {
+                file_map.unset (input_name);
+                file_map.@set (output_name, result);
+            }
+
             return false;
         });
+
+        old_list.clear ();
+        add_files (file_map.values.to_array ());
+        old_file_names.queue_draw ();
+        can_rename = false;
     }
 
     public void update_view () {
@@ -210,6 +204,7 @@ public class Renamer : Gtk.Box {
         bool use_name_root = name_root.length > 0;
         int index = naming_offset;
 
+        Gtk.TreeIter? iter = null;
         old_list.@foreach ((m, p, i) => {
             string index_string = "";
 
@@ -235,7 +230,7 @@ public class Renamer : Gtk.Box {
             }
 
             string output_name;
-            m.@get (i, 0, out output_name);
+            old_list.@get (i, 0, out output_name);
 
             if (index_string != "") {
                 if (use_name_root) {
@@ -250,15 +245,51 @@ public class Renamer : Gtk.Box {
 
                 sb.insert (extension_pos + 1, index_string);
                 output_name = sb.str;
-            } else {
-                m.@get (i, 0, out output_name);
+            } else { // Search and replace
+                old_list.@get (i, 0, out output_name);
                 output_name = output_name.replace (name_entry.get_text (), number_entry.get_text ());
             }
 
             new_list.append (out iter);
             new_list.set (iter, 0, output_name);
             index++;
+
             return false;
         });
+
+        can_rename = true;
+    }
+
+    public void change_rename_mode () {
+        can_rename = false;
+
+        if (naming_combo.get_active () == 3) {
+            number_entry.hide ();
+            name_switch_label.hide ();
+            name_entry.hide ();
+            name_switch.hide ();
+        } else if (naming_combo.get_active () == 4) {
+            name_switch.set_active (true);
+            name_entry.placeholder_text = _("Search for");
+            number_entry.placeholder_text = _("Replace with");
+            name_entry.text = "";
+            number_entry.text = "";
+            name_entry.show ();
+            number_entry.show ();
+            name_switch_label.show ();
+            name_switch.hide ();
+        } else {
+            if (name_entry.placeholder_text != _("Enter naming scheme")) {
+                name_entry.placeholder_text = _("Enter naming scheme");
+                number_entry.placeholder_text = _("Start from");
+                name_entry.text = "";
+                number_entry.text = "";
+            }
+
+            number_entry.show ();
+            name_switch_label.show ();
+            name_entry.show ();
+            name_switch.show ();
+        }
     }
 }

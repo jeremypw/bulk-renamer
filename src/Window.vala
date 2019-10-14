@@ -33,38 +33,22 @@ public class BulkRenamer.Window : Gtk.ApplicationWindow {
     }
 
     construct {
-        set_default_size (WIDTH, HEIGHT);
-        set_resizable (false);
-        set_position ( Gtk.WindowPosition.CENTER );
-
         renamer = new Renamer ();
+        renamer.margin = 6;
         add (renamer);
 
         var cancel_button = new Gtk.Button.with_label (_("Cancel"));
-
-        var rename_button = new Gtk.Button.with_label (_("Rename"));
-        rename_button.sensitive = false;
-        rename_button.get_style_context ().add_class (Gtk.STYLE_CLASS_SUGGESTED_ACTION);
-
-        var title = new Gtk.Label ("Bulk Rename");
-        var buttons = new Gtk.Box (Gtk.Orientation.HORIZONTAL, WIDTH);
-        buttons.border_width = 8;
-        buttons.pack_start (cancel_button, true, true, 0);
-        buttons.pack_start (title, false, false, 0);
-        buttons.pack_end (rename_button, true, true, 0);
-
-        var headerbar = new Gtk.HeaderBar ();
-        headerbar.set_custom_title (buttons);
-        set_titlebar (headerbar);
-
         cancel_button.clicked.connect (() => {
             destroy ();
         });
 
+        var rename_button = new Gtk.Button.with_label (_("Rename"));
+        renamer.bind_property ("can_rename", rename_button, "sensitive", GLib.BindingFlags.BIDIRECTIONAL);
+        rename_button.get_style_context ().add_class (Gtk.STYLE_CLASS_SUGGESTED_ACTION);
+
         rename_button.clicked.connect (() => {
             try {
                 renamer.rename_files ();
-                destroy ();
             } catch (Error e) {
                 var dlg = new Granite.MessageDialog ("Error renaming files", e.message, new ThemedIcon ("dialog-error"));
                 dlg.run ();
@@ -72,10 +56,11 @@ public class BulkRenamer.Window : Gtk.ApplicationWindow {
             }
         });
 
-        renamer.preview_button.clicked.connect (() => {
-            renamer.update_view ();
-            rename_button.set_sensitive (true);
-        });
+        var headerbar = new Gtk.HeaderBar ();
+        headerbar.set_title ("Bulk Rename");
+        headerbar.pack_start (cancel_button);
+        headerbar.pack_end (rename_button);
+        set_titlebar (headerbar);
     }
 
     public void set_files (File[] files) {
