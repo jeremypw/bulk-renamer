@@ -20,13 +20,15 @@
 */
 
 public class Modifier : Gtk.Grid {
+    private Gtk.ComboBoxText position_combo;
     private Gtk.ComboBoxText naming_combo;
     private Gtk.Stack stack;
     private Gtk.Revealer revealer;
+    private Gtk.Revealer search_revealer;
     private Gtk.SpinButton digits_spin_button;
     private Gtk.Entry number_entry;
+    private Gtk.Entry text_entry;
     private Gtk.Entry search_entry;
-    private Gtk.Entry replace_entry;
 
     public signal void changed ();
 
@@ -34,15 +36,32 @@ public class Modifier : Gtk.Grid {
         orientation = Gtk.Orientation.HORIZONTAL;
         column_spacing = 6;
 
+        position_combo = new Gtk.ComboBoxText ();
+        position_combo.insert (RenamePosition.SUFFIX, "NUMBER", RenamePosition.SUFFIX.to_string ());
+        position_combo.insert (RenamePosition.PREFIX, "TEXT", RenamePosition.PREFIX.to_string ());
+        position_combo.insert (RenamePosition.REPLACE, "DATETIME", RenamePosition.REPLACE.to_string ());
+        position_combo.active = RenamePosition.SUFFIX;
+
+        search_revealer = new Gtk.Revealer ();
+        search_entry = new Gtk.Entry ();
+        search_entry.placeholder_text = _("Target text");
+        search_revealer.add (search_entry);
+        search_revealer.reveal_child = false;
+
+        var position_grid = new Gtk.Grid ();
+        position_grid.orientation = Gtk.Orientation.HORIZONTAL;
+        position_grid.column_spacing = 6;
+        position_grid.add (search_revealer);
+        position_grid.add (position_combo);
+
         naming_combo = new Gtk.ComboBoxText ();
         naming_combo.insert (RenameMode.NUMBER, "NUMBER", RenameMode.NUMBER.to_string ());
+        naming_combo.insert (RenameMode.TEXT, "TEXT", RenameMode.TEXT.to_string ());
         naming_combo.insert (RenameMode.DATETIME, "DATETIME", RenameMode.DATETIME.to_string ());
-        naming_combo.insert (RenameMode.REPLACE, "REPLACE", RenameMode.REPLACE.to_string ());
-        naming_combo.active = 0;
+        naming_combo.active = RenameMode.NUMBER;
 
-        var digits_grid = new Gtk.Grid ();
-        digits_grid.orientation = Gtk.Orientation.HORIZONTAL;
-        digits_grid.column_spacing = 6;
+        text_entry = new Gtk.Entry ();
+        text_entry.hexpand = true;
 
         var digits_label = new Gtk.Label (_("Digits"));
         digits_spin_button = new Gtk.SpinButton.with_range (0.0, 5.0, 1.0);
@@ -50,29 +69,19 @@ public class Modifier : Gtk.Grid {
         digits_spin_button.set_value (1.0);
 
         number_entry = new Gtk.Entry ();
-        number_entry.placeholder_text = _("Start from (default 1)");
+        number_entry.placeholder_text = _("Number from ");
         number_entry.hexpand = true;
 
+        var digits_grid = new Gtk.Grid ();
+        digits_grid.orientation = Gtk.Orientation.HORIZONTAL;
+        digits_grid.column_spacing = 6;
         digits_grid.add (digits_label);
         digits_grid.add (digits_spin_button);
         digits_grid.add (number_entry);
 
-        search_entry = new Gtk.Entry ();
-        search_entry.placeholder_text = _("Search text");
-
-        replace_entry = new Gtk.Entry ();
-        replace_entry.placeholder_text = _("Replacement text");
-
-        var search_replace_grid = new Gtk.Grid ();
-        search_replace_grid.column_spacing = 6;
-
-        search_replace_grid.orientation = Gtk.Orientation.HORIZONTAL;
-        search_replace_grid.add (search_entry);
-        search_replace_grid.add (replace_entry);
-
         stack = new Gtk.Stack ();
         stack.add_named (digits_grid, "NUMBER");
-        stack.add_named (search_replace_grid, "REPLACE");
+        stack.add_named (text_entry, "TEXT");
         stack.set_visible_child_name ("NUMBER");
 
         revealer = new Gtk.Revealer ();
@@ -81,10 +90,12 @@ public class Modifier : Gtk.Grid {
 
         add (naming_combo);
         add (revealer);
+        add (position_grid);
 
         show_all ();
 
         naming_combo.changed.connect (change_rename_mode);
+        position_combo.changed.connect (change_rename_position);
 
         number_entry.focus_out_event.connect (() => {
             schedule_update ();
@@ -96,62 +107,93 @@ public class Modifier : Gtk.Grid {
         });
 
         search_entry.focus_out_event.connect (() => {
-            if (replace_entry.text != "") {
-                schedule_update ();
-            }
-
+            schedule_update ();
             return Gdk.EVENT_PROPAGATE;
         });
 
         search_entry.activate.connect (() => {
-            if (replace_entry.text != "") {
-                schedule_update ();
-            }
+            schedule_update ();
         });
 
-        replace_entry.focus_out_event.connect (() => {
-            if (search_entry.text != "") {
+        text_entry.focus_out_event.connect (() => {
+            if (text_entry.text != "") {
                 schedule_update ();
             }
 
             return Gdk.EVENT_PROPAGATE;
         });
 
-        replace_entry.activate.connect (() => {
-            if (replace_entry.text != "") {
+        text_entry.activate.connect (() => {
+            if (text_entry.text != "") {
                 schedule_update ();
             }
         });
 
         digits_spin_button.value_changed.connect (schedule_update);
+
+        position_combo.changed.connect (() => {
+            text_entry.placeholder_text = ((RenamePosition)(position_combo.get_active ())).to_string ();
+            schedule_update ();
+        });
     }
 
    public void change_rename_mode () {
-        if (naming_combo.get_active () == RenameMode.DATETIME) {
-            revealer.reveal_child = false;
-        } else if (naming_combo.get_active () == RenameMode.REPLACE) {
-            revealer.reveal_child = true;
-            stack.set_visible_child_name ("REPLACE");
-        } else {
-            revealer.reveal_child = true;
-            stack.set_visible_child_name ("NUMBER");
+        switch (naming_combo.get_active ()) {
+            case RenameMode.DATETIME:
+                revealer.reveal_child = false;
+                break;
+
+            case RenameMode.TEXT:
+                revealer.reveal_child = true;
+                stack.set_visible_child_name ("TEXT");
+                break;
+
+            default:
+                revealer.reveal_child = true;
+                stack.set_visible_child_name ("NUMBER");
+                break;
         }
 
         schedule_update ();
     }
 
+   public void change_rename_position () {
+        search_revealer.reveal_child = position_combo.get_active () == RenamePosition.REPLACE;
+        schedule_update ();
+    }
+
     public string rename (string input, int index) {
         var seq = index + int.parse (number_entry.text);
+        string new_text = "";
 
         switch (naming_combo.get_active ()) {
             case RenameMode.NUMBER:
                 var template = "%%0%id".printf ((int)(digits_spin_button.get_value ()));
-                return input.concat (template.printf (seq));
+                new_text = template.printf (seq);
+                break;
+
+            case RenameMode.TEXT:
+                new_text = text_entry.text;
+                break;
+
             case RenameMode.DATETIME:
                 var dt = new GLib.DateTime.now_local ();
-                return input.concat (dt.format ("-%Y-%m-%d"));
-            case RenameMode.REPLACE:
-                return input.replace (search_entry.text, replace_entry.text);
+                new_text = dt.format ("%Y-%m-%d");
+                break;
+
+            default:
+                break;
+        }
+
+        switch (position_combo.get_active ()) {
+            case RenamePosition.SUFFIX:
+                return input.concat ("-", new_text);
+
+            case RenamePosition.PREFIX:
+                return new_text.concat ("-", input);
+
+            case RenamePosition.REPLACE:
+                return input.replace (search_entry.text, new_text);
 
             default:
                 break;
@@ -161,6 +203,7 @@ public class Modifier : Gtk.Grid {
     }
 
     private void schedule_update () {
+        /*TODO throttle updating */
         changed ();
     }
 }

@@ -23,8 +23,8 @@
 
 public enum RenameMode {
     NUMBER,
+    TEXT,
     DATETIME,
-    REPLACE,
     INVALID;
 
     public string to_string () {
@@ -32,14 +32,36 @@ public enum RenameMode {
             case RenameMode.NUMBER:
                 return _("Number sequence");
 
+            case RenameMode.TEXT:
+                return _("Text");
+
             case RenameMode.DATETIME:
                 return _("Current Date");
 
-            case RenameMode.REPLACE:
-                return _("Search and Replace");
-
             default:
                 return "ERROR - unrecognised rename mode";
+        }
+    }
+}
+
+public enum RenamePosition {
+    SUFFIX,
+    PREFIX,
+    REPLACE;
+
+    public string to_string () {
+        switch (this) {
+            case RenamePosition.SUFFIX:
+                return _("Suffix");
+
+            case RenamePosition.PREFIX:
+                return _("Prefix");
+
+            case RenamePosition.REPLACE:
+                return _("Replace");
+
+            default:
+                return "ERROR - unrecognised rename position";
         }
     }
 }
