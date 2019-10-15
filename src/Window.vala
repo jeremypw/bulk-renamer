@@ -33,6 +33,7 @@ public class BulkRenamer.Window : Gtk.ApplicationWindow {
     }
 
     construct {
+        title = _("Bulk Renamer");
         renamer = new Renamer ();
         renamer.margin = 6;
 
@@ -49,10 +50,6 @@ public class BulkRenamer.Window : Gtk.ApplicationWindow {
         bbox.set_layout (Gtk.ButtonBoxStyle.END);
         bbox.add (cancel_button);
         bbox.add (rename_button);
-
-        var headerbar = new Gtk.HeaderBar ();
-        headerbar.set_title ("Bulk Rename");
-        set_titlebar (headerbar);
 
         var grid = new Gtk.Grid ();
         grid.orientation = Gtk.Orientation.VERTICAL;

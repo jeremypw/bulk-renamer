@@ -21,8 +21,32 @@
  *
 */
 
+public enum RenameMode {
+    NUMBER,
+    DATETIME,
+    REPLACE,
+    INVALID;
+
+    public string to_string () {
+        switch (this) {
+            case RenameMode.NUMBER:
+                return _("Number sequence");
+
+            case RenameMode.DATETIME:
+                return _("Current Date");
+
+            case RenameMode.REPLACE:
+                return _("Search and Replace");
+
+            default:
+                return "ERROR - unrecognised rename mode";
+        }
+    }
+}
+
 public class Renamer : Gtk.Grid {
     private Gee.HashMap<string, File> file_map;
+    private Gee.ArrayList<Modifier> modifier_chain;
 
     private Gtk.TreeView old_file_names;
     private Gtk.TreeView new_file_names;
@@ -48,31 +72,41 @@ public class Renamer : Gtk.Grid {
     construct {
         can_rename = false;
         orientation = Gtk.Orientation.VERTICAL;
-        row_spacing = 18;
+        directory = "";
+        naming_offset = 0;
 
         file_map = new Gee.HashMap<string, File> ();
-        directory = "";
-
-        naming_offset = 0;
+        modifier_chain = new Gee.ArrayList<Modifier> ();
+        modifier_chain.add (new Modifier ());
 
         name_entry = new Gtk.Entry ();
         name_entry.placeholder_text = _("Enter naming scheme");
+        name_entry.hexpand = true;
 
         name_switch = new Gtk.Switch ();
         name_switch_label = new Gtk.Label (_("Set base name:"));
         name_switch_label.valign = Gtk.Align.CENTER;
         name_switch.active = false;
 
-        number_entry = new Gtk.Entry ();
-        number_entry.placeholder_text = _("Start from");
+        var controls_grid = new Gtk.Grid ();
+        controls_grid.orientation = Gtk.Orientation.HORIZONTAL;
+        controls_grid.column_spacing = 6;
+        controls_grid.margin = 6;
+        controls_grid.margin_bottom = 12;
+        
+        controls_grid.add (name_switch_label);
+        controls_grid.add (name_switch);
+        controls_grid.add (name_entry);
 
-        naming_combo = new Gtk.ComboBoxText ();
-        naming_combo.append_text (_("1,2,3…"));
-        naming_combo.append_text (_("01,02,03…"));
-        naming_combo.append_text (_("001,002,003…"));
-        naming_combo.append_text (_("Current Date"));
-        naming_combo.append_text (_("Search and Replace"));
-        naming_combo.active = 0;
+        var modifier_grid = new Gtk.Grid ();
+        modifier_grid.orientation = Gtk.Orientation.VERTICAL;
+        modifier_grid.margin = 6;
+        modifier_grid.margin_bottom = 12;
+        modifier_grid.row_spacing = 3;
+
+        foreach (Modifier mod in modifier_chain) {
+            modifier_grid.add (mod);
+        }
 
         var cell = new Gtk.CellRendererText ();
         old_list = new Gtk.ListStore (1, typeof (string));
@@ -93,24 +127,14 @@ public class Renamer : Gtk.Grid {
         new_scrolled_window.add (new_file_names);
         new_scrolled_window.set_min_content_height (300);
 
-        var controls = new Gtk.Box (Gtk.Orientation.HORIZONTAL, 18);
-        controls.margin_top = row_spacing - margin_top;
-        controls.pack_start (name_switch_label);
-        controls.pack_start (name_switch);
-        controls.pack_start (name_entry);
-
-        controls.pack_end (naming_combo);
-        controls.pack_end (number_entry);
-
         var lists = new Gtk.Box (Gtk.Orientation.HORIZONTAL, 18);
         lists.pack_start (old_scrolled_window);
         lists.pack_end (new_scrolled_window);
 
-        add (controls);
+        add (controls_grid);
+        add (modifier_grid);
         add (lists);
-
-        naming_combo.changed.connect (change_rename_mode);
-
+ 
         name_switch.notify["active"].connect (() => {
             if (name_switch.active) {
                 name_entry.set_sensitive (true);
@@ -133,14 +157,6 @@ public class Renamer : Gtk.Grid {
             update_view ();
         });
 
-        number_entry.focus_out_event.connect (() => {
-            update_view ();
-            return Gdk.EVENT_PROPAGATE;
-        });
-
-        number_entry.activate.connect (() => {
-            update_view ();
-        });
     }
 
     public void add_files (File[] files) {
@@ -229,11 +245,11 @@ public class Renamer : Gtk.Grid {
                 case 2: // "001,002,003…"
                     index_string = "%03d".printf (index);
                     break;
-                case 3: // "001,002,003…"
+                case 3: // "Current date"
                     var dt = new GLib.DateTime.now_local ();
                     index_string = dt.format ("-%Y-%m-%d");
                     break;
-                case 4: //Search and Replace
+                case 4: //"Search and Replace"
                     break;
 
                 default:
@@ -274,38 +290,5 @@ public class Renamer : Gtk.Grid {
 
             return false;
         });
-    }
-
-    public void change_rename_mode () {
-        if (naming_combo.get_active () == 3) {
-            number_entry.hide ();
-            name_switch_label.hide ();
-            name_entry.hide ();
-            name_switch.hide ();
-        } else if (naming_combo.get_active () == 4) {
-            name_switch.set_active (true);
-            name_entry.placeholder_text = _("Search for");
-            number_entry.placeholder_text = _("Replace with");
-            name_entry.text = "";
-            number_entry.text = "";
-            name_entry.show ();
-            number_entry.show ();
-            name_switch_label.show ();
-            name_switch.hide ();
-        } else {
-            if (name_entry.placeholder_text != _("Enter naming scheme")) {
-                name_entry.placeholder_text = _("Enter naming scheme");
-                number_entry.placeholder_text = _("Start from");
-                name_entry.text = "";
-                number_entry.text = "";
-            }
-
-            number_entry.show ();
-            name_switch_label.show ();
-            name_entry.show ();
-            name_switch.show ();
-        }
-
-        update_view ();
     }
 }
