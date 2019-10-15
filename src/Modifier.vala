@@ -35,9 +35,9 @@ public class Modifier : Gtk.Grid {
         column_spacing = 6;
 
         naming_combo = new Gtk.ComboBoxText ();
-        naming_combo.insert (RenameMode.NUMBER, null, RenameMode.NUMBER.to_string ());
-        naming_combo.insert (RenameMode.DATETIME, null, RenameMode.DATETIME.to_string ());
-        naming_combo.insert (RenameMode.REPLACE, null, RenameMode.REPLACE.to_string ());
+        naming_combo.insert (RenameMode.NUMBER, "NUMBER", RenameMode.NUMBER.to_string ());
+        naming_combo.insert (RenameMode.DATETIME, "DATETIME", RenameMode.DATETIME.to_string ());
+        naming_combo.insert (RenameMode.REPLACE, "REPLACE", RenameMode.REPLACE.to_string ());
         naming_combo.active = 0;
 
         var digits_grid = new Gtk.Grid ();
@@ -56,7 +56,6 @@ public class Modifier : Gtk.Grid {
         digits_grid.add (digits_label);
         digits_grid.add (digits_spin_button);
         digits_grid.add (number_entry);
-//        digits_grid.hexpand = true;
 
         search_entry = new Gtk.Entry ();
         search_entry.placeholder_text = _("Search text");
@@ -88,13 +87,43 @@ public class Modifier : Gtk.Grid {
         naming_combo.changed.connect (change_rename_mode);
 
         number_entry.focus_out_event.connect (() => {
-            changed ();
+            schedule_update ();
             return Gdk.EVENT_PROPAGATE;
         });
 
         number_entry.activate.connect (() => {
             changed ();
         });
+
+        search_entry.focus_out_event.connect (() => {
+            if (replace_entry.text != "") {
+                schedule_update ();
+            }
+
+            return Gdk.EVENT_PROPAGATE;
+        });
+
+        search_entry.activate.connect (() => {
+            if (replace_entry.text != "") {
+                schedule_update ();
+            }
+        });
+
+        replace_entry.focus_out_event.connect (() => {
+            if (search_entry.text != "") {
+                schedule_update ();
+            }
+
+            return Gdk.EVENT_PROPAGATE;
+        });
+
+        replace_entry.activate.connect (() => {
+            if (replace_entry.text != "") {
+                schedule_update ();
+            }
+        });
+
+        digits_spin_button.value_changed.connect (schedule_update);
     }
 
    public void change_rename_mode () {
@@ -108,6 +137,30 @@ public class Modifier : Gtk.Grid {
             stack.set_visible_child_name ("NUMBER");
         }
 
+        schedule_update ();
+    }
+
+    public string rename (string input, int index) {
+        var seq = index + int.parse (number_entry.text);
+
+        switch (naming_combo.get_active ()) {
+            case RenameMode.NUMBER:
+                var template = "%%0%id".printf ((int)(digits_spin_button.get_value ()));
+                return input.concat (template.printf (seq));
+            case RenameMode.DATETIME:
+                var dt = new GLib.DateTime.now_local ();
+                return input.concat (dt.format ("-%Y-%m-%d"));
+            case RenameMode.REPLACE:
+                return input.replace (search_entry.text, replace_entry.text);
+
+            default:
+                break;
+        }
+
+        return input;
+    }
+
+    private void schedule_update () {
         changed ();
     }
 }

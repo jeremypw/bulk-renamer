@@ -2,5 +2,5 @@
 Name=Bulk Rename
 Description=Rename Files
 MimeType=image;audio;video;text;application;
-Exec=com.github.jeremypw.bulk-renamer %f
+Exec=com.github.jeremypw.bulk-renamer %F
 Gettext-Domain=com.github.jeremypw.bulk-renamer

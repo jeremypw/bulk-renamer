@@ -54,9 +54,6 @@ public class Renamer : Gtk.Grid {
     private Gtk.ListStore new_list;
 
     private Gtk.Entry name_entry;
-    private Gtk.Entry number_entry;
-    private Gtk.ComboBoxText naming_combo;
-    private int naming_offset;
     private Gtk.Switch name_switch;
     private Gtk.Label name_switch_label;
 
@@ -73,7 +70,6 @@ public class Renamer : Gtk.Grid {
         can_rename = false;
         orientation = Gtk.Orientation.VERTICAL;
         directory = "";
-        naming_offset = 0;
 
         file_map = new Gee.HashMap<string, File> ();
         modifier_chain = new Gee.ArrayList<Modifier> ();
@@ -106,6 +102,7 @@ public class Renamer : Gtk.Grid {
 
         foreach (Modifier mod in modifier_chain) {
             modifier_grid.add (mod);
+            mod.changed.connect (update_view);
         }
 
         var cell = new Gtk.CellRendererText ();
@@ -218,77 +215,49 @@ public class Renamer : Gtk.Grid {
 
     public void update_view () {
         can_rename = true;
-
-        if (number_entry.get_text () != "") {
-            naming_offset = int.parse (number_entry.get_text ()) - 1;
-        } else {
-            naming_offset = 0;
-        }
-
         new_list.clear ();
 
-        var name_root = name_switch.active ? name_entry.get_text () : "";
-        bool use_name_root = name_root.length > 0;
-        int index = naming_offset;
-
         Gtk.TreeIter? iter = null;
+        int index = 0;
+        string output_name = "";
+        string input_name = "";
+        string file_name = "";
+        string extension = "";
+
         old_list.@foreach ((m, p, i) => {
-            string index_string = "";
-
-            switch (naming_combo.get_active ()) {
-                case 0: // "1,2,3…"
-                    index_string = index.to_string ();
-                    break;
-                case 1: // "01,02,03…"
-                    index_string = "%02d".printf (index);
-                    break;
-                case 2: // "001,002,003…"
-                    index_string = "%03d".printf (index);
-                    break;
-                case 3: // "Current date"
-                    var dt = new GLib.DateTime.now_local ();
-                    index_string = dt.format ("-%Y-%m-%d");
-                    break;
-                case 4: //"Search and Replace"
-                    break;
-
-                default:
-                    break;
+            if (name_switch.active) {
+                input_name = name_entry.get_text ();
+            } else {
+                old_list.@get (i, 0, out file_name);
+                input_name = strip_extension (file_name, out extension);
             }
 
-            string output_name;
-            string input_name;
-            old_list.@get (i, 0, out input_name);
-
-            if (index_string != "") {
-                if (use_name_root) {
-                    input_name = name_root;
-                }
-
-                StringBuilder sb = new StringBuilder (input_name);
-                var extension_pos = input_name.last_index_of_char ('.', 0);
-                if (extension_pos < input_name.length - 4) {
-                    extension_pos = input_name.length - 1;
-                }
-
-                sb.insert (extension_pos + 1, index_string);
-                output_name = sb.str;
-            } else { // Search and replace
-                old_list.@get (i, 0, out input_name);
-                output_name = input_name.replace (name_entry.get_text (), number_entry.get_text ());
+            foreach (Modifier mod in modifier_chain) {
+                output_name = mod.rename (input_name, index);
+                input_name = output_name;
             }
 
             new_list.append (out iter);
-            new_list.set (iter, 0, output_name);
+            new_list.set (iter, 0, output_name.concat (extension));
 
-            if (output_name.strip () == "" || output_name == input_name) {
+            if (output_name.strip () == "") {
                 can_rename = false;
                 /* TODO Visual indication of problem output name */
             }
 
             index++;
-
             return false;
         });
+    }
+
+    private string strip_extension (string filename, out string extension) {
+        var extension_pos = filename.last_index_of_char ('.', 0);
+        if (filename.length < 4 || extension_pos < filename.length - 4) {
+            extension = "";
+            return filename;
+        } else {
+            extension = filename [extension_pos : filename.length];
+            return filename [0 : extension_pos];
+        }
     }
 }
