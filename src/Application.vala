@@ -20,7 +20,7 @@
 */
 
 public class BulkRenamer.App : Gtk.Application {
-    public const OptionEntry[] RENAMER_OPTIONS =  {
+    public const OptionEntry[] RENAMER_OPTIONS = {
         { "base-name", 'b', 0, OptionArg.STRING, out base_name,
         "Base name of renamed files", "BASE NAME" },
         { "sort-by-date", 0, 0, OptionArg.NONE, out sort_by_date,

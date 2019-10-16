@@ -29,14 +29,19 @@ public class Modifier : Gtk.Grid {
     private Gtk.Entry text_entry;
     private Gtk.Entry separator_entry;
     private Gtk.Entry search_entry;
+    private Gtk.Revealer remove_revealer;
+
+    public bool allow_remove { get; set; }
 
     public signal void changed ();
+    public signal void remove_request ();
 
     construct {
         orientation = Gtk.Orientation.HORIZONTAL;
         column_spacing = 6;
 
         mode_combo = new Gtk.ComboBoxText ();
+        mode_combo.valign = Gtk.Align.CENTER;
         mode_combo.insert (RenameMode.NUMBER, "NUMBER", RenameMode.NUMBER.to_string ());
         mode_combo.insert (RenameMode.TEXT, "TEXT", RenameMode.TEXT.to_string ());
         mode_combo.insert (RenameMode.DATETIME, "DATETIME", RenameMode.DATETIME.to_string ());
@@ -66,12 +71,12 @@ public class Modifier : Gtk.Grid {
 
         var date_time_grid = new Gtk.Grid ();
         date_time_grid.orientation = Gtk.Orientation.HORIZONTAL;
-        date_time_grid.valign = Gtk.Align.CENTER;
         date_time_grid.column_spacing = 6;
         date_time_grid.add (current_date_button);
         date_time_grid.add (creation_date_button);
 
         mode_stack = new Gtk.Stack ();
+        mode_stack.valign = Gtk.Align.CENTER;
         mode_stack.add_named (digits_grid, "NUMBER");
         mode_stack.add_named (text_entry, "TEXT");
         mode_stack.add_named (date_time_grid, "DATETIME");
@@ -92,6 +97,7 @@ public class Modifier : Gtk.Grid {
         search_entry.placeholder_text = _("Target text");
 
         position_stack = new Gtk.Stack ();
+        position_stack.valign = Gtk.Align.CENTER;
         position_stack.add_named (separator_grid, "SEPARATOR");
         position_stack.add_named (search_entry, "TARGET");
 
@@ -104,12 +110,24 @@ public class Modifier : Gtk.Grid {
         var position_grid = new Gtk.Grid ();
         position_grid.orientation = Gtk.Orientation.HORIZONTAL;
         position_grid.column_spacing = 6;
+        position_grid.valign = Gtk.Align.CENTER;
         position_grid.add (position_stack);
         position_grid.add (position_combo);
+
+
+        var remove_button = new Gtk.Button.from_icon_name ("list-remove-symbolic", Gtk.IconSize.SMALL_TOOLBAR);
+        remove_button.halign = Gtk.Align.END;
+        remove_button.margin = 6;
+        remove_button.valign = Gtk.Align.CENTER;
+        remove_button.set_tooltip_text (_("Remove this modification"));
+
+        remove_revealer = new Gtk.Revealer ();
+        remove_revealer.add (remove_button);
 
         add (mode_combo);
         add (mode_stack);
         add (position_grid);
+        add (remove_revealer);
 
         show_all ();
 
@@ -163,9 +181,18 @@ public class Modifier : Gtk.Grid {
             text_entry.placeholder_text = ((RenamePosition)(position_combo.get_active ())).to_string ();
             schedule_update ();
         });
+
+        remove_button.clicked.connect (() => {
+            remove_request ();
+        });
     }
 
-   public void change_rename_mode () {
+    public Modifier (bool _allow_remove) {
+        Object (allow_remove: _allow_remove);
+        remove_revealer.reveal_child = allow_remove;
+    }
+
+    public void change_rename_mode () {
         switch (mode_combo.get_active ()) {
             case RenameMode.NUMBER:
                 mode_stack.set_visible_child_name ("NUMBER");

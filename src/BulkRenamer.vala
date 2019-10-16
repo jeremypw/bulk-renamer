@@ -70,6 +70,8 @@ public class Renamer : Gtk.Grid {
     private Gee.HashMap<string, File> file_map;
     private Gee.ArrayList<Modifier> modifier_chain;
 
+    private Gtk.Grid modifier_grid;
+
     private Gtk.TreeView old_file_names;
     private Gtk.TreeView new_file_names;
     private Gtk.ListStore old_list;
@@ -95,7 +97,6 @@ public class Renamer : Gtk.Grid {
 
         file_map = new Gee.HashMap<string, File> ();
         modifier_chain = new Gee.ArrayList<Modifier> ();
-        modifier_chain.add (new Modifier ());
 
         name_entry = new Gtk.Entry ();
         name_entry.placeholder_text = _("Enter naming scheme");
@@ -111,21 +112,21 @@ public class Renamer : Gtk.Grid {
         controls_grid.column_spacing = 6;
         controls_grid.margin = 6;
         controls_grid.margin_bottom = 12;
-        
+
         controls_grid.add (name_switch_label);
         controls_grid.add (name_switch);
         controls_grid.add (name_entry);
 
-        var modifier_grid = new Gtk.Grid ();
+        modifier_grid = new Gtk.Grid ();
         modifier_grid.orientation = Gtk.Orientation.VERTICAL;
         modifier_grid.margin = 6;
         modifier_grid.margin_bottom = 12;
         modifier_grid.row_spacing = 3;
 
-        foreach (Modifier mod in modifier_chain) {
-            modifier_grid.add (mod);
-            mod.changed.connect (update_view);
-        }
+        var add_modifier_button = new Gtk.Button.from_icon_name ("list-add-symbolic", Gtk.IconSize.SMALL_TOOLBAR);
+        add_modifier_button.halign = Gtk.Align.START;
+        add_modifier_button.margin = 6;
+        add_modifier_button.set_tooltip_text (_("Add another modification"));
 
         var cell = new Gtk.CellRendererText ();
         old_list = new Gtk.ListStore (1, typeof (string));
@@ -152,8 +153,9 @@ public class Renamer : Gtk.Grid {
 
         add (controls_grid);
         add (modifier_grid);
+        add (add_modifier_button);
         add (lists);
- 
+
         name_switch.notify["active"].connect (() => {
             if (name_switch.active) {
                 name_entry.set_sensitive (true);
@@ -176,6 +178,11 @@ public class Renamer : Gtk.Grid {
             update_view ();
         });
 
+        add_modifier_button.clicked.connect (() => {
+            add_modifier (true);
+        });
+
+        add_modifier (false);
     }
 
     public void add_files (File[] files) {
@@ -202,11 +209,21 @@ public class Renamer : Gtk.Grid {
         update_view ();
     }
 
-    public void rename_files () throws GLib.Error {
-        if (!can_rename) {
-            return;
-        }
+    public void add_modifier (bool allow_remove) {
+        var mod = new Modifier (allow_remove);
+        modifier_chain.add (mod);
+        modifier_grid.add (mod);
+        mod.changed.connect (update_view);
+        mod.remove_request.connect (() => {
+            modifier_chain.remove (mod);
+            mod.destroy ();
+            update_view ();
+        });
 
+        update_view ();
+    }
+
+    public void rename_files () throws GLib.Error {
         old_list.@foreach ((m, p, i) => {
             string input_name, output_name;
             File? result = null;
@@ -263,6 +280,7 @@ public class Renamer : Gtk.Grid {
             new_list.set (iter, 0, output_name.concat (extension));
 
             if (output_name.strip () == "") {
+                critical ("Blank output");
                 can_rename = false;
                 /* TODO Visual indication of problem output name */
             }
@@ -270,6 +288,7 @@ public class Renamer : Gtk.Grid {
             index++;
             return false;
         });
+
     }
 
     private string strip_extension (string filename, out string extension) {

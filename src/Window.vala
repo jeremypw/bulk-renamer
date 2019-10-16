@@ -16,14 +16,12 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  *  Authors:
- *  Vartan Belavejian <https://github.com/VartanBelavejian> 
+ *  Vartan Belavejian <https://github.com/VartanBelavejian>
  *  Jeremy Wootten <jeremywootten@gmail.com>
  *
 */
 
 public class BulkRenamer.Window : Gtk.ApplicationWindow {
-    private const int WIDTH = 200;
-    private const int HEIGHT = 400;
     private Renamer renamer;
 
     public Window (Gtk.Application app) {
@@ -43,9 +41,12 @@ public class BulkRenamer.Window : Gtk.ApplicationWindow {
         var rename_button = new Gtk.Button.with_label (_("Rename"));
         rename_button.margin = 3;
         rename_button.sensitive = false;
-        renamer.bind_property ("can-rename", rename_button, "sensitive", GLib.BindingFlags.DEFAULT);
+        renamer.bind_property ("can-rename",
+                                rename_button, "sensitive",
+                                GLib.BindingFlags.DEFAULT | GLib.BindingFlags.SYNC_CREATE);
+
         rename_button.get_style_context ().add_class (Gtk.STYLE_CLASS_SUGGESTED_ACTION);
-        
+
         var bbox = new Gtk.ButtonBox (Gtk.Orientation.HORIZONTAL);
         bbox.set_layout (Gtk.ButtonBoxStyle.END);
         bbox.add (cancel_button);
@@ -63,7 +64,9 @@ public class BulkRenamer.Window : Gtk.ApplicationWindow {
             try {
                 renamer.rename_files ();
             } catch (Error e) {
-                var dlg = new Granite.MessageDialog ("Error renaming files", e.message, new ThemedIcon ("dialog-error"));
+                var dlg = new Granite.MessageDialog ("Error renaming files",
+                                                     e.message,
+                                                     new ThemedIcon ("dialog-error"));
                 dlg.run ();
                 dlg.destroy ();
             }
