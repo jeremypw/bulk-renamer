@@ -2,6 +2,7 @@ executable(
     meson.project_name(),
     'Application.vala',
     'BulkRenamer.vala',
+    'Enums.vala',
     'Modifier.vala',
     'Window.vala',
     dependencies: [

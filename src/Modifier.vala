@@ -19,47 +19,6 @@
  *
 */
 
-public enum RenameDateFormat {
-    DEFAULT_DATE,
-    DEFAULT_DATETIME,
-    LOCALE,
-    ISO_DATE,
-    ISO_DATETIME;
-
-    public string to_string () {
-        switch (this) {
-            case RenameDateFormat.DEFAULT_DATE:
-                return _("Default Date only");
-            case RenameDateFormat.DEFAULT_DATETIME:
-                return _("Default Date and Time");
-            case RenameDateFormat.LOCALE:
-                return _("Locale Date and Time");
-            case RenameDateFormat.ISO_DATE:
-                return _("ISO 8601 Date only");
-            case RenameDateFormat.ISO_DATETIME:
-                return _("ISO 8601 Date and Time");
-            default:
-                assert_not_reached ();
-        }
-    }
-}
-
-public enum RenameDateType {
-    NOW,
-    CHOOSE;
-
-    public string to_string () {
-        switch (this) {
-            case RenameDateType.NOW:
-                return _("Current Date");
-            case RenameDateType.CHOOSE:
-                return _("Choose a date");
-            default:
-                assert_not_reached ();
-        }
-    }
-}
-
 public class Modifier : Gtk.Grid {
     private Gtk.ComboBoxText position_combo;
     private Gtk.ComboBoxText mode_combo;
