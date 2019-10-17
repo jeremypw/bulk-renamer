@@ -19,9 +19,53 @@
  *
 */
 
+public enum RenameDateFormat {
+    DEFAULT_DATE,
+    DEFAULT_DATETIME,
+    LOCALE,
+    ISO_DATE,
+    ISO_DATETIME;
+
+    public string to_string () {
+        switch (this) {
+            case RenameDateFormat.DEFAULT_DATE:
+                return _("Default Date only");
+            case RenameDateFormat.DEFAULT_DATETIME:
+                return _("Default Date and Time");
+            case RenameDateFormat.LOCALE:
+                return _("Locale Date and Time");
+            case RenameDateFormat.ISO_DATE:
+                return _("ISO 8601 Date only");
+            case RenameDateFormat.ISO_DATETIME:
+                return _("ISO 8601 Date and Time");
+            default:
+                assert_not_reached ();
+        }
+    }
+}
+
+public enum RenameDateType {
+    NOW,
+    CHOOSE;
+
+    public string to_string () {
+        switch (this) {
+            case RenameDateType.NOW:
+                return _("Current Date");
+            case RenameDateType.CHOOSE:
+                return _("Choose a date");
+            default:
+                assert_not_reached ();
+        }
+    }
+}
+
 public class Modifier : Gtk.Grid {
     private Gtk.ComboBoxText position_combo;
     private Gtk.ComboBoxText mode_combo;
+    private Gtk.ComboBoxText date_format_combo;
+    private Gtk.ComboBoxText date_type_combo;
+    private Granite.Widgets.DatePicker date_picker;
     private Gtk.Stack mode_stack;
     private Gtk.Stack position_stack;
     private Gtk.SpinButton digits_spin_button;
@@ -30,6 +74,7 @@ public class Modifier : Gtk.Grid {
     private Gtk.Entry separator_entry;
     private Gtk.Entry search_entry;
     private Gtk.Revealer remove_revealer;
+    private Gtk.Revealer date_picker_revealer;
 
     public bool allow_remove { get; set; }
 
@@ -66,14 +111,32 @@ public class Modifier : Gtk.Grid {
         digits_grid.add (digits_spin_button);
         digits_grid.add (number_entry);
 
-        var current_date_button = new Gtk.RadioButton.with_label (null, _("Current date"));
-        var creation_date_button = new Gtk.RadioButton.with_label_from_widget (current_date_button, _("Creation date"));
+        date_format_combo = new Gtk.ComboBoxText ();
+        date_format_combo.valign = Gtk.Align.CENTER;
+        date_format_combo.insert (RenameDateFormat.DEFAULT_DATE, "DEFAULT_DATE", RenameDateFormat.DEFAULT_DATE.to_string ());
+        date_format_combo.insert (RenameDateFormat.DEFAULT_DATETIME, "DEFAULT_DATETIME", RenameDateFormat.DEFAULT_DATETIME.to_string ());
+        date_format_combo.insert (RenameDateFormat.LOCALE, "LOCALE", RenameDateFormat.LOCALE.to_string ());
+        date_format_combo.insert (RenameDateFormat.ISO_DATE, "ISO_DATE", RenameDateFormat.ISO_DATE.to_string ());
+        date_format_combo.insert (RenameDateFormat.ISO_DATETIME, "ISO_DATETIME", RenameDateFormat.ISO_DATETIME.to_string ());
+        date_format_combo.set_active (RenameDateFormat.DEFAULT_DATE);
+
+        date_type_combo = new Gtk.ComboBoxText ();
+        date_type_combo.valign = Gtk.Align.CENTER;
+        date_type_combo.insert (RenameDateType.NOW, "NOW", RenameDateType.NOW.to_string ());
+        date_type_combo.insert (RenameDateType.CHOOSE, "CHOOSE", RenameDateType.CHOOSE.to_string ());
+        date_type_combo.set_active (RenameDateType.NOW);
+
+        date_picker = new Granite.Widgets.DatePicker ();
+        date_picker_revealer = new Gtk.Revealer ();
+        date_picker_revealer.add (date_picker);
+        date_picker_revealer.reveal_child = false;
 
         var date_time_grid = new Gtk.Grid ();
         date_time_grid.orientation = Gtk.Orientation.HORIZONTAL;
         date_time_grid.column_spacing = 6;
-        date_time_grid.add (current_date_button);
-        date_time_grid.add (creation_date_button);
+        date_time_grid.add (date_format_combo);
+        date_time_grid.add (date_type_combo);
+        date_time_grid.add (date_picker_revealer);
 
         mode_stack = new Gtk.Stack ();
         mode_stack.valign = Gtk.Align.CENTER;
@@ -114,7 +177,6 @@ public class Modifier : Gtk.Grid {
         position_grid.add (position_stack);
         position_grid.add (position_combo);
 
-
         var remove_button = new Gtk.Button.from_icon_name ("list-remove-symbolic", Gtk.IconSize.SMALL_TOOLBAR);
         remove_button.halign = Gtk.Align.END;
         remove_button.margin = 6;
@@ -134,13 +196,25 @@ public class Modifier : Gtk.Grid {
         mode_combo.changed.connect (change_rename_mode);
         position_combo.changed.connect (change_rename_position);
 
+        date_format_combo.changed.connect (schedule_update);
+        date_type_combo.changed.connect (() => {
+            date_picker_revealer.reveal_child = date_type_combo.get_active () == RenameDateType.CHOOSE;
+            if (date_type_combo.get_active () == RenameDateType.NOW) {
+                schedule_update ();
+            }
+        });
+
+        date_picker.date_changed.connect (() => {
+            schedule_update ();
+        });
+
         number_entry.focus_out_event.connect (() => {
             schedule_update ();
             return Gdk.EVENT_PROPAGATE;
         });
 
         number_entry.activate.connect (() => {
-            changed ();
+            schedule_update ();
         });
 
         search_entry.focus_out_event.connect (() => {
@@ -238,8 +312,20 @@ public class Modifier : Gtk.Grid {
                 break;
 
             case RenameMode.DATETIME:
-                var dt = new GLib.DateTime.now_local ();
-                new_text = dt.format ("%Y-%m-%d");
+                GLib.DateTime dt;
+                switch (date_type_combo.get_active ()) {
+                    case RenameDateType.NOW:
+                        dt = new GLib.DateTime.now_local ();
+                        break;
+                    case RenameDateType.CHOOSE:
+                        dt = date_picker.date;
+                        break;
+                    default:
+                        assert_not_reached ();
+                }
+
+                new_text = get_formated_date_time (dt);
+
                 break;
 
             default:
@@ -261,6 +347,29 @@ public class Modifier : Gtk.Grid {
         }
 
         return input;
+    }
+
+    public string get_formated_date_time (DateTime? dt) {
+        switch (date_format_combo.get_active ()) {
+            case RenameDateFormat.DEFAULT_DATE:
+                return dt.format (Granite.DateTime.get_default_date_format (false, true, true));
+
+            case RenameDateFormat.DEFAULT_DATETIME:
+                return dt.format (Granite.DateTime.get_default_date_format (false, true, true).
+                                  concat (" ", Granite.DateTime.get_default_time_format ()));
+
+            case RenameDateFormat.LOCALE:
+                return dt.format ("%c");
+
+            case RenameDateFormat.ISO_DATE:
+                return dt.format ("%Y-%m-%d");
+
+            case RenameDateFormat.ISO_DATETIME:
+                return dt.format ("%Y-%m-%d %H:%M:%S");
+
+            default:
+                assert_not_reached ();
+        }
     }
 
     private void schedule_update () {

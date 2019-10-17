@@ -16,7 +16,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  *  Authors:
- *  Vartan Belavejian <https://github.com/VartanBelavejian> 
+ *  Vartan Belavejian <https://github.com/VartanBelavejian>
  *  Jeremy Wootten <jeremywootten@gmail.com>
  *
 */
@@ -36,10 +36,10 @@ public enum RenameMode {
                 return _("Text");
 
             case RenameMode.DATETIME:
-                return _("Current Date");
+                return _("Date");
 
             default:
-                return "ERROR - unrecognised rename mode";
+                assert_not_reached ();
         }
     }
 }
@@ -61,7 +61,29 @@ public enum RenamePosition {
                 return _("Replace");
 
             default:
-                return "ERROR - unrecognised rename position";
+                assert_not_reached ();
+        }
+    }
+}
+
+public enum RenameSortBy {
+    NAME,
+    CREATED,
+    MODIFIED;
+
+    public string to_string () {
+        switch (this) {
+            case RenameSortBy.NAME:
+                return _("Name");
+
+            case RenameSortBy.CREATED:
+                return _("Creation Date");
+
+            case RenameSortBy.MODIFIED:
+                return _("Last modification date");
+
+            default:
+                assert_not_reached ();
         }
     }
 }
@@ -80,6 +102,9 @@ public class Renamer : Gtk.Grid {
     private Gtk.Entry name_entry;
     private Gtk.Switch name_switch;
     private Gtk.Label name_switch_label;
+
+    private Gtk.ComboBoxText sort_by_combo;
+    private Gtk.ComboBoxText sort_type_combo;
 
     public bool can_rename { get; set; }
     public string directory { get; private set; default = ""; }
@@ -106,6 +131,11 @@ public class Renamer : Gtk.Grid {
         name_switch_label = new Gtk.Label (_("Set base name:"));
         name_switch_label.valign = Gtk.Align.CENTER;
         name_switch.active = false;
+
+        var sort_by_label = new Gtk.Label (_("Sort order of originals"));
+        sort_by_combo = new Gtk.ComboBoxText ();
+        sort_by_combo.insert (RenameSortBy.NAME, "NAME", RenameSortBy.NAME.to_string ());
+        sort_type_combo = new Gtk.ComboBoxText ();
 
         var controls_grid = new Gtk.Grid ();
         controls_grid.orientation = Gtk.Orientation.HORIZONTAL;
