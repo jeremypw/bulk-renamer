@@ -41,6 +41,8 @@ public class Renamer : Gtk.Grid {
 
     private Mutex info_map_mutex;
 
+    private int number_of_files = 0;
+
     public bool can_rename { get; set; }
     public string directory { get; private set; default = ""; }
 
@@ -122,6 +124,10 @@ public class Renamer : Gtk.Grid {
 
         var cell = new Gtk.CellRendererText ();
         old_list = new Gtk.ListStore (1, typeof (string));
+        old_list.set_default_sort_func (old_list_sorter);
+        old_list.set_sort_column_id (Gtk.SortColumn.DEFAULT, Gtk.SortType.ASCENDING);
+
+
         old_file_names = new Gtk.TreeView.with_model (old_list);
         old_file_names.insert_column_with_attributes (-1, _("Old Name"), cell, "text", 0);
 
@@ -147,6 +153,16 @@ public class Renamer : Gtk.Grid {
         add (modifier_grid);
         add (add_modifier_button);
         add (lists);
+
+        sort_by_combo.changed.connect (() => {
+            old_list.set_default_sort_func (old_list_sorter);
+            update_view ();
+        });
+
+        sort_type_switch.notify ["active"].connect (() => {
+            old_list.set_default_sort_func (old_list_sorter);
+            update_view ();
+        });
 
         name_switch.notify["active"].connect (() => {
             if (name_switch.active) {
@@ -184,9 +200,9 @@ public class Renamer : Gtk.Grid {
             directory = Path.get_dirname (files[0].get_path ());
         }
 
-        string query_info_string = string.join (",", FILE_ATTRIBUTE_STANDARD_TARGET_URI,
-                                                     FILE_ATTRIBUTE_TIME_CREATED,
-                                                     FILE_ATTRIBUTE_TIME_MODIFIED);
+        string query_info_string = string.join (",", FileAttribute.STANDARD_TARGET_URI,
+                                                     FileAttribute.TIME_CREATED,
+                                                     FileAttribute.TIME_MODIFIED);
         Gtk.TreeIter? iter = null;
         foreach (File f in files) {
             var path = f.get_path ();
@@ -196,6 +212,7 @@ public class Renamer : Gtk.Grid {
                 file_map.@set (basename, f);
                 old_list.append (out iter);
                 old_list.set (iter, 0, basename);
+                number_of_files++;
 
                 f.query_info_async.begin (query_info_string,
                                           FileQueryInfoFlags.NOFOLLOW_SYMLINKS,
@@ -216,6 +233,7 @@ public class Renamer : Gtk.Grid {
             }
         }
 
+        old_list.set_default_sort_func (old_list_sorter);
         update_view ();
     }
 
@@ -234,7 +252,8 @@ public class Renamer : Gtk.Grid {
     }
 
     public void rename_files () {
-        Gtk.TreePath path;
+        var new_files = new File[number_of_files];
+        int index = 0;
         old_list.@foreach ((m, p, i) => {
             string input_name = "";
             string output_name = "";
@@ -249,6 +268,7 @@ public class Renamer : Gtk.Grid {
             if (file != null) {
                 try {
                     result = file.set_display_name (output_name);
+                    new_files[index++] = result;
                 } catch (GLib.Error e) {
                     return true;
                 }
@@ -258,15 +278,34 @@ public class Renamer : Gtk.Grid {
         });
 
         old_list.clear ();
-        var file_array = file_map.values.to_array ();
+        new_list.clear ();
+        number_of_files = 0;
         file_map.clear ();
         file_info_map.clear ();
-        add_files (file_array);
-        old_file_names.queue_draw ();
+        add_files (new_files);
         can_rename = false;
     }
 
-    public void update_view () {
+    private uint view_update_timeout_id = 0;
+    public void schedule_view_update () {
+        var delay = int.min (number_of_files * modifier_chain.size, 500);
+        if (delay < 20) {
+            update_view ();
+        } else {
+            if (view_update_timeout_id > 0) {
+                Source.remove (view_update_timeout_id);
+            }
+
+            view_update_timeout_id = Timeout.add (delay, () => {
+                update_view ();
+                view_update_timeout_id = 0;
+                return Source.REMOVE;
+            });
+        }
+
+    }
+
+    private void update_view () {
         can_rename = true;
         new_list.clear ();
 
@@ -276,6 +315,7 @@ public class Renamer : Gtk.Grid {
         string input_name = "";
         string file_name = "";
         string extension = "";
+        string last_stripped_name = "";
 
         old_list.@foreach ((m, p, i) => {
             if (name_switch.active) {
@@ -293,12 +333,14 @@ public class Renamer : Gtk.Grid {
             new_list.append (out iter);
             new_list.set (iter, 0, output_name.concat (extension));
 
-            if (output_name.strip () == "") {
-                critical ("Blank output");
+            var stripped_name = output_name.strip ();
+            if (stripped_name == "" || stripped_name == last_stripped_name) {
+                critical ("Blank or duplicate output");
                 can_rename = false;
                 /* TODO Visual indication of problem output name */
             }
 
+            last_stripped_name = stripped_name;
             index++;
             return false;
         });
@@ -316,14 +358,41 @@ public class Renamer : Gtk.Grid {
         }
     }
 
-    private void on_sort_changed () {
+    public int old_list_sorter (Gtk.TreeModel m, Gtk.TreeIter a, Gtk.TreeIter b) {
+        int res = 0;
+        string name_a = "";
+        string name_b = "";
+        m.@get (a, 0, out name_a);
+        m.@get (b, 0, out name_b);
+
         switch (sort_by_combo.get_active ()) {
             case RenameSortBy.NAME:
+                res = name_a.collate (name_b);
+                break;
+
             case RenameSortBy.CREATED:
+                var time_a = file_info_map.@get (name_a).get_attribute_uint64 (FileAttribute.TIME_CREATED);
+                var time_b = file_info_map.@get (name_b).get_attribute_uint64 (FileAttribute.TIME_CREATED);
+
+                res = time_a > time_b ? 1 : -1; /* Unlikely to be equal */
+                break;
+
             case RenameSortBy.MODIFIED:
+                var time_a = file_info_map.@get (name_a).get_attribute_uint64 (FileAttribute.TIME_MODIFIED);
+                var time_b = file_info_map.@get (name_b).get_attribute_uint64 (FileAttribute.TIME_MODIFIED);
+
+                res = time_a > time_b ? 1 : -1; /* Unlikely to be equal */
+                break;
+
             default:
                 assert_not_reached ();
         }
+
+        if (sort_type_switch.active) {
+            res = -res;
+        }
+
+        return res;
     }
 }
 

@@ -96,15 +96,15 @@ public enum RenameDateFormat {
     public string to_string () {
         switch (this) {
             case RenameDateFormat.DEFAULT_DATE:
-                return _("Default Date only");
+                return _("Default Format - Date only");
             case RenameDateFormat.DEFAULT_DATETIME:
-                return _("Default Date and Time");
+                return _("Default Format - Date and Time");
             case RenameDateFormat.LOCALE:
-                return _("Locale Date and Time");
+                return _("Locale Format - Date and Time");
             case RenameDateFormat.ISO_DATE:
-                return _("ISO 8601 Date only");
+                return _("ISO 8601 Format - Date only");
             case RenameDateFormat.ISO_DATETIME:
-                return _("ISO 8601 Date and Time");
+                return _("ISO 8601 Format - Date and Time");
             default:
                 assert_not_reached ();
         }

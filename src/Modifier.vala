@@ -155,39 +155,42 @@ public class Modifier : Gtk.Grid {
         mode_combo.changed.connect (change_rename_mode);
         position_combo.changed.connect (change_rename_position);
 
-        date_format_combo.changed.connect (schedule_update);
+        date_format_combo.changed.connect (() => {
+            changed ();
+        });
+
         date_type_combo.changed.connect (() => {
             date_picker_revealer.reveal_child = date_type_combo.get_active () == RenameDateType.CHOOSE;
             if (date_type_combo.get_active () == RenameDateType.NOW) {
-                schedule_update ();
+                changed ();
             }
         });
 
         date_picker.date_changed.connect (() => {
-            schedule_update ();
+            changed ();
         });
 
         number_entry.focus_out_event.connect (() => {
-            schedule_update ();
+            changed ();
             return Gdk.EVENT_PROPAGATE;
         });
 
         number_entry.activate.connect (() => {
-            schedule_update ();
+            changed ();
         });
 
         search_entry.focus_out_event.connect (() => {
-            schedule_update ();
+            changed ();
             return Gdk.EVENT_PROPAGATE;
         });
 
         search_entry.activate.connect (() => {
-            schedule_update ();
+            changed ();
         });
 
         text_entry.focus_out_event.connect (() => {
             if (text_entry.text != "") {
-                schedule_update ();
+                changed ();
             }
 
             return Gdk.EVENT_PROPAGATE;
@@ -195,24 +198,26 @@ public class Modifier : Gtk.Grid {
 
         text_entry.activate.connect (() => {
             if (text_entry.text != "") {
-                schedule_update ();
+                changed ();
             }
         });
 
         separator_entry.focus_out_event.connect (() => {
-            schedule_update ();
+            changed ();
             return Gdk.EVENT_PROPAGATE;
         });
 
         separator_entry.activate.connect (() => {
-            schedule_update ();
+            changed ();
         });
 
-        digits_spin_button.value_changed.connect (schedule_update);
+        digits_spin_button.value_changed.connect (() => {
+            changed ();
+        });
 
         position_combo.changed.connect (() => {
             text_entry.placeholder_text = ((RenamePosition)(position_combo.get_active ())).to_string ();
-            schedule_update ();
+            changed ();
         });
 
         remove_button.clicked.connect (() => {
@@ -243,7 +248,7 @@ public class Modifier : Gtk.Grid {
                 break;
         }
 
-        schedule_update ();
+        changed ();
     }
 
    public void change_rename_position () {
@@ -253,7 +258,7 @@ public class Modifier : Gtk.Grid {
             position_stack.visible_child_name = "SEPARATOR";
         }
 
-        schedule_update ();
+        changed ();
     }
 
     public string rename (string input, int index) {
@@ -329,10 +334,5 @@ public class Modifier : Gtk.Grid {
             default:
                 assert_not_reached ();
         }
-    }
-
-    private void schedule_update () {
-        /*TODO throttle updating */
-        changed ();
     }
 }
