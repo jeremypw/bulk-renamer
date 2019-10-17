@@ -59,6 +59,9 @@ public class Renamer : Gtk.Grid {
         name_entry.placeholder_text = _("Enter naming scheme");
         name_entry.hexpand = true;
 
+        var name_entry_revealer = new Gtk.Revealer ();
+        name_entry_revealer.add (name_entry);
+
         var name_switch_label = new Gtk.Label (_("Set base name:"));
         name_switch = new Gtk.Switch ();
         name_switch_label.valign = Gtk.Align.CENTER;
@@ -96,7 +99,7 @@ public class Renamer : Gtk.Grid {
 
         controls_grid.add (name_switch_label);
         controls_grid.add (name_switch);
-        controls_grid.add (name_entry);
+        controls_grid.add (name_entry_revealer);
         controls_grid.add (sort_by_grid);
         controls_grid.add (sort_type_grid);
 
@@ -141,15 +144,13 @@ public class Renamer : Gtk.Grid {
 
         name_switch.notify["active"].connect (() => {
             if (name_switch.active) {
-                name_entry.set_sensitive (true);
+                name_entry_revealer.reveal_child = true;
                 name_entry.placeholder_text = _("Enter naming scheme");
             } else {
-                name_entry.set_sensitive (false);
+                name_entry_revealer.reveal_child = false;
                 name_entry.placeholder_text = "";
                 name_entry.text = "";
             }
-
-            update_view ();
         });
 
         name_entry.focus_out_event.connect (() => {
