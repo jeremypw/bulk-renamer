@@ -23,6 +23,7 @@
 
 public class Renamer : Gtk.Grid {
     private Gee.HashMap<string, File> file_map;
+    private Gee.HashMap<string, FileInfo> file_info_map;
     private Gee.ArrayList<Modifier> modifier_chain;
 
     private Gtk.Grid modifier_grid;
@@ -38,6 +39,8 @@ public class Renamer : Gtk.Grid {
 
     private Gtk.ComboBoxText sort_by_combo;
 
+    private Mutex info_map_mutex;
+
     public bool can_rename { get; set; }
     public string directory { get; private set; default = ""; }
 
@@ -48,11 +51,14 @@ public class Renamer : Gtk.Grid {
     }
 
     construct {
+        info_map_mutex = Mutex ();
+
         can_rename = false;
         orientation = Gtk.Orientation.VERTICAL;
         directory = "";
 
         file_map = new Gee.HashMap<string, File> ();
+        file_info_map = new Gee.HashMap<string, FileInfo> ();
         modifier_chain = new Gee.ArrayList<Modifier> ();
 
         name_entry = new Gtk.Entry ();
@@ -178,6 +184,9 @@ public class Renamer : Gtk.Grid {
             directory = Path.get_dirname (files[0].get_path ());
         }
 
+        string query_info_string = string.join (",", FILE_ATTRIBUTE_STANDARD_TARGET_URI,
+                                                     FILE_ATTRIBUTE_TIME_CREATED,
+                                                     FILE_ATTRIBUTE_TIME_MODIFIED);
         Gtk.TreeIter? iter = null;
         foreach (File f in files) {
             var path = f.get_path ();
@@ -187,6 +196,23 @@ public class Renamer : Gtk.Grid {
                 file_map.@set (basename, f);
                 old_list.append (out iter);
                 old_list.set (iter, 0, basename);
+
+                f.query_info_async.begin (query_info_string,
+                                          FileQueryInfoFlags.NOFOLLOW_SYMLINKS,
+                                          Priority.DEFAULT,
+                                          null, /* No cancellable for now */
+                                          (object, res) => {
+
+                    try {
+                        var info = f.query_info_async.end (res);
+                        info_map_mutex.@lock ();
+                        file_info_map.@set (basename, info.dup ());
+                        info_map_mutex.@unlock ();
+                    } catch (Error e) {
+
+                    }
+                });
+
             }
         }
 
@@ -214,6 +240,7 @@ public class Renamer : Gtk.Grid {
             old_list.@get (i, 0, out input_name);
             new_list.@get (i, 0, out output_name);
             var file = file_map.@get (input_name);
+
             if (file != null) {
                 try {
                     result = file.set_display_name (output_name);
@@ -222,16 +249,14 @@ public class Renamer : Gtk.Grid {
                 }
             }
 
-            if (result != null) {
-                file_map.unset (input_name);
-                file_map.@set (output_name, result);
-            }
-
             return false;
         });
 
         old_list.clear ();
-        add_files (file_map.values.to_array ());
+        var file_array = file_map.values.to_array ();
+        file_map.clear ();
+        file_info_map.clear ();
+        add_files (file_array);
         old_file_names.queue_draw ();
         can_rename = false;
     }
@@ -285,4 +310,16 @@ public class Renamer : Gtk.Grid {
             return filename [0 : extension_pos];
         }
     }
+
+    private void on_sort_changed () {
+        switch (sort_by_combo.get_active ()) {
+            case RenameSortBy.NAME:
+            case RenameSortBy.CREATED:
+            case RenameSortBy.MODIFIED:
+            default:
+                assert_not_reached ();
+        }
+    }
 }
+
+
