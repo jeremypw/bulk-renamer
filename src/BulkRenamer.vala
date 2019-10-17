@@ -34,10 +34,9 @@ public class Renamer : Gtk.Grid {
 
     private Gtk.Entry name_entry;
     private Gtk.Switch name_switch;
-    private Gtk.Label name_switch_label;
+    private Gtk.Switch sort_type_switch;
 
     private Gtk.ComboBoxText sort_by_combo;
-    private Gtk.ComboBoxText sort_type_combo;
 
     public bool can_rename { get; set; }
     public string directory { get; private set; default = ""; }
@@ -60,15 +59,34 @@ public class Renamer : Gtk.Grid {
         name_entry.placeholder_text = _("Enter naming scheme");
         name_entry.hexpand = true;
 
+        var name_switch_label = new Gtk.Label (_("Set base name:"));
         name_switch = new Gtk.Switch ();
-        name_switch_label = new Gtk.Label (_("Set base name:"));
         name_switch_label.valign = Gtk.Align.CENTER;
         name_switch.active = false;
 
-        var sort_by_label = new Gtk.Label (_("Sort order of originals"));
+        var sort_by_label = new Gtk.Label (_("Sort originals by:"));
         sort_by_combo = new Gtk.ComboBoxText ();
+        sort_by_combo.valign = Gtk.Align.CENTER;
         sort_by_combo.insert (RenameSortBy.NAME, "NAME", RenameSortBy.NAME.to_string ());
-        sort_type_combo = new Gtk.ComboBoxText ();
+        sort_by_combo.insert (RenameSortBy.CREATED, "CREATED", RenameSortBy.CREATED.to_string ());
+        sort_by_combo.insert (RenameSortBy.MODIFIED, "MODIFIED", RenameSortBy.MODIFIED.to_string ());
+        sort_by_combo.set_active (RenameSortBy.NAME);
+
+        var sort_by_grid = new Gtk.Grid ();
+        sort_by_grid.orientation = Gtk.Orientation.HORIZONTAL;
+        sort_by_grid.column_spacing = 6;
+        sort_by_grid.add (sort_by_label);
+        sort_by_grid.add (sort_by_combo);
+
+        var sort_type_label = new Gtk.Label (_("Reverse"));
+        sort_type_switch = new Gtk.Switch ();
+        sort_type_switch.valign = Gtk.Align.CENTER;
+
+        var sort_type_grid = new Gtk.Grid ();
+        sort_type_grid.orientation = Gtk.Orientation.HORIZONTAL;
+        sort_type_grid.column_spacing = 6;
+        sort_type_grid.add (sort_type_switch);
+        sort_type_grid.add (sort_type_label);
 
         var controls_grid = new Gtk.Grid ();
         controls_grid.orientation = Gtk.Orientation.HORIZONTAL;
@@ -79,6 +97,8 @@ public class Renamer : Gtk.Grid {
         controls_grid.add (name_switch_label);
         controls_grid.add (name_switch);
         controls_grid.add (name_entry);
+        controls_grid.add (sort_by_grid);
+        controls_grid.add (sort_type_grid);
 
         modifier_grid = new Gtk.Grid ();
         modifier_grid.orientation = Gtk.Orientation.VERTICAL;
