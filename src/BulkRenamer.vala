@@ -233,12 +233,17 @@ public class Renamer : Gtk.Grid {
         update_view ();
     }
 
-    public void rename_files () throws GLib.Error {
+    public void rename_files () {
+        Gtk.TreePath path;
         old_list.@foreach ((m, p, i) => {
-            string input_name, output_name;
+            string input_name = "";
+            string output_name = "";
             File? result = null;
-            old_list.@get (i, 0, out input_name);
-            new_list.@get (i, 0, out output_name);
+            Gtk.TreeIter? iter = null;
+            old_list.get_iter (out iter, p);
+            old_list.@get (iter, 0, out input_name);
+            new_list.get_iter (out iter, p);
+            new_list.@get (iter, 0, out output_name);
             var file = file_map.@get (input_name);
 
             if (file != null) {
