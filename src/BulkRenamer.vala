@@ -113,6 +113,19 @@ public class Renamer : Gtk.Grid {
         controls_grid.add (sort_by_grid);
         controls_grid.add (sort_type_grid);
 
+        var hseparator_label = new Granite.HeaderLabel (_("Modifiers"));
+
+        var hseparator = new Gtk.Separator (Gtk.Orientation.HORIZONTAL);
+        hseparator.valign = Gtk.Align.CENTER;
+        hseparator.hexpand = true;
+
+        var hseparator_grid = new Gtk.Grid ();
+        hseparator_grid.orientation = Gtk.Orientation.HORIZONTAL;
+        hseparator_grid.margin_start = 6;
+        hseparator_grid.margin_end = 6;
+        hseparator_grid.add (hseparator_label);
+        hseparator_grid.add (hseparator);
+
         modifier_grid = new Gtk.Grid ();
         modifier_grid.orientation = Gtk.Orientation.VERTICAL;
         modifier_grid.margin = 6;
@@ -133,22 +146,29 @@ public class Renamer : Gtk.Grid {
         new_file_names.insert_column_with_attributes (-1, _("New Name"), cell, "text", 0);
 
         var old_scrolled_window = new Gtk.ScrolledWindow (null, null);
+        old_scrolled_window.hexpand = true;
         old_scrolled_window.set_policy (Gtk.PolicyType.NEVER, Gtk.PolicyType.AUTOMATIC);
         old_scrolled_window.add (old_file_names);
         old_scrolled_window.set_min_content_height (300);
 
         var new_scrolled_window = new Gtk.ScrolledWindow (null, null);
+        new_scrolled_window.hexpand = true;
         new_scrolled_window.set_policy (Gtk.PolicyType.NEVER, Gtk.PolicyType.AUTOMATIC);
         new_scrolled_window.add (new_file_names);
         new_scrolled_window.set_min_content_height (300);
 
-        var lists = new Gtk.Box (Gtk.Orientation.HORIZONTAL, 18);
-        lists.pack_start (old_scrolled_window);
-        lists.pack_end (new_scrolled_window);
+//        var lists = new Gtk.Box (Gtk.Orientation.HORIZONTAL, 18);
+        var lists_grid = new Gtk.Grid ();
+        lists_grid.orientation = Gtk.Orientation.HORIZONTAL;
+        lists_grid.column_spacing = 12;
+        lists_grid.margin = 12;
+        lists_grid.add (old_scrolled_window);
+        lists_grid.add (new_scrolled_window);
 
         add (controls_grid);
+        add (hseparator_grid);
         add (modifier_grid);
-        add (lists);
+        add (lists_grid);
 
         sort_by_combo.changed.connect (() => {
             old_list.set_default_sort_func (old_list_sorter);

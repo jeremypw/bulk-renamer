@@ -43,6 +43,8 @@ public class Modifier : Gtk.Grid {
     construct {
         orientation = Gtk.Orientation.HORIZONTAL;
         column_spacing = 6;
+        margin_start = 12;
+        margin_end = 12;
 
         mode_combo = new Gtk.ComboBoxText ();
         mode_combo.valign = Gtk.Align.CENTER;
