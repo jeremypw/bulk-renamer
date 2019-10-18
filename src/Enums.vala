@@ -126,3 +126,19 @@ public enum RenameDateType {
         }
     }
 }
+
+public enum RenameBase{
+    ORIGINAL,
+    CUSTOM;
+
+    public string to_string () {
+        switch (this) {
+            case RenameBase.ORIGINAL:
+                return _("Original filename");
+            case RenameBase.CUSTOM:
+                return _("Enter a base name");
+            default:
+                assert_not_reached ();
+        }
+    }
+}

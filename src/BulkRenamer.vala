@@ -33,10 +33,9 @@ public class Renamer : Gtk.Grid {
     private Gtk.ListStore old_list;
     private Gtk.ListStore new_list;
 
-    private Gtk.Entry name_entry;
-    private Gtk.Switch name_switch;
+    private Gtk.Entry base_name_entry;
+    private Gtk.ComboBoxText base_name_combo;
     private Gtk.Switch sort_type_switch;
-
     private Gtk.ComboBoxText sort_by_combo;
 
     private Mutex info_map_mutex;
@@ -63,17 +62,20 @@ public class Renamer : Gtk.Grid {
         file_info_map = new Gee.HashMap<string, FileInfo> ();
         modifier_chain = new Gee.ArrayList<Modifier> ();
 
-        name_entry = new Gtk.Entry ();
-        name_entry.placeholder_text = _("Enter naming scheme");
-        name_entry.hexpand = true;
+        var base_name_label = new Gtk.Label (_("Base name"));
 
-        var name_entry_revealer = new Gtk.Revealer ();
-        name_entry_revealer.add (name_entry);
+        base_name_combo = new Gtk.ComboBoxText ();
+        base_name_combo.valign = Gtk.Align.CENTER;
+        base_name_combo.insert (RenameBase.ORIGINAL, "ORIGINAL", RenameBase.ORIGINAL.to_string ());
+        base_name_combo.insert (RenameBase.CUSTOM, "CUSTOM", RenameBase.CUSTOM.to_string ());
+        base_name_combo.set_active (RenameBase.ORIGINAL);
 
-        var name_switch_label = new Gtk.Label (_("Set base name:"));
-        name_switch = new Gtk.Switch ();
-        name_switch_label.valign = Gtk.Align.CENTER;
-        name_switch.active = false;
+        base_name_entry = new Gtk.Entry ();
+        base_name_entry.placeholder_text = _("Enter naming scheme");
+        base_name_entry.hexpand = true;
+
+        var base_name_entry_revealer = new Gtk.Revealer ();
+        base_name_entry_revealer.add (base_name_entry);
 
         var sort_by_label = new Gtk.Label (_("Sort originals by:"));
         sort_by_combo = new Gtk.ComboBoxText ();
@@ -105,9 +107,9 @@ public class Renamer : Gtk.Grid {
         controls_grid.margin = 6;
         controls_grid.margin_bottom = 12;
 
-        controls_grid.add (name_switch_label);
-        controls_grid.add (name_switch);
-        controls_grid.add (name_entry_revealer);
+        controls_grid.add (base_name_label);
+        controls_grid.add (base_name_combo);
+        controls_grid.add (base_name_entry_revealer);
         controls_grid.add (sort_by_grid);
         controls_grid.add (sort_type_grid);
 
@@ -164,23 +166,17 @@ public class Renamer : Gtk.Grid {
             update_view ();
         });
 
-        name_switch.notify["active"].connect (() => {
-            if (name_switch.active) {
-                name_entry_revealer.reveal_child = true;
-                name_entry.placeholder_text = _("Enter naming scheme");
-            } else {
-                name_entry_revealer.reveal_child = false;
-                name_entry.placeholder_text = "";
-                name_entry.text = "";
-            }
+        base_name_combo.changed.connect (() => {
+            base_name_entry_revealer.reveal_child = base_name_combo.get_active () == RenameBase.CUSTOM;
+            update_view ();
         });
 
-        name_entry.focus_out_event.connect (() => {
+        base_name_entry.focus_out_event.connect (() => {
             update_view ();
             return Gdk.EVENT_PROPAGATE;
         });
 
-        name_entry.activate.connect (() => {
+        base_name_entry.activate.connect (() => {
             update_view ();
         });
 
@@ -317,9 +313,11 @@ public class Renamer : Gtk.Grid {
         string extension = "";
         string last_stripped_name = "";
 
+        bool custom_basename = base_name_combo.get_active () == RenameBase.CUSTOM;
+
         old_list.@foreach ((m, p, i) => {
-            if (name_switch.active) {
-                input_name = name_entry.get_text ();
+            if (custom_basename) {
+                input_name = base_name_entry.get_text ();
             } else {
                 old_list.@get (i, 0, out file_name);
                 input_name = strip_extension (file_name, out extension);
@@ -335,7 +333,6 @@ public class Renamer : Gtk.Grid {
 
             var stripped_name = output_name.strip ();
             if (stripped_name == "" || stripped_name == last_stripped_name) {
-                critical ("Blank or duplicate output");
                 can_rename = false;
                 /* TODO Visual indication of problem output name */
             }

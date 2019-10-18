@@ -108,7 +108,7 @@ public class Modifier : Gtk.Grid {
 
         separator_entry = new Gtk.Entry ();
         separator_entry.placeholder_text = _("Separator");
-        separator_entry.text = "-";
+        separator_entry.text = "";
         var separator_label = new Gtk.Label (_("Separator:"));
 
         var separator_grid = new Gtk.Grid ();
