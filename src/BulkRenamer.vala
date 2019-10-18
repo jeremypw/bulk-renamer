@@ -119,11 +119,6 @@ public class Renamer : Gtk.Grid {
         modifier_grid.margin_bottom = 12;
         modifier_grid.row_spacing = 3;
 
-        var add_modifier_button = new Gtk.Button.from_icon_name ("list-add-symbolic", Gtk.IconSize.SMALL_TOOLBAR);
-        add_modifier_button.halign = Gtk.Align.START;
-        add_modifier_button.margin = 6;
-        add_modifier_button.set_tooltip_text (_("Add another modification"));
-
         var cell = new Gtk.CellRendererText ();
         old_list = new Gtk.ListStore (1, typeof (string));
         old_list.set_default_sort_func (old_list_sorter);
@@ -153,7 +148,6 @@ public class Renamer : Gtk.Grid {
 
         add (controls_grid);
         add (modifier_grid);
-        add (add_modifier_button);
         add (lists);
 
         sort_by_combo.changed.connect (() => {
@@ -178,10 +172,6 @@ public class Renamer : Gtk.Grid {
 
         base_name_entry.activate.connect (() => {
             update_view ();
-        });
-
-        add_modifier_button.clicked.connect (() => {
-            add_modifier (true);
         });
 
         add_modifier (false);

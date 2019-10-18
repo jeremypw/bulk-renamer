@@ -138,7 +138,7 @@ public class Modifier : Gtk.Grid {
         position_grid.add (position_stack);
         position_grid.add (position_combo);
 
-        var remove_button = new Gtk.Button.from_icon_name ("list-remove-symbolic", Gtk.IconSize.SMALL_TOOLBAR);
+        var remove_button = new Gtk.Button.from_icon_name ("list-remove", Gtk.IconSize.SMALL_TOOLBAR);
         remove_button.halign = Gtk.Align.END;
         remove_button.margin = 6;
         remove_button.valign = Gtk.Align.CENTER;

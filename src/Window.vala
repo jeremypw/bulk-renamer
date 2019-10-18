@@ -35,6 +35,18 @@ public class BulkRenamer.Window : Gtk.ApplicationWindow {
         renamer = new Renamer ();
         renamer.margin = 6;
 
+        var add_modifier_button = new Gtk.Button.from_icon_name ("list-add", Gtk.IconSize.SMALL_TOOLBAR);
+        add_modifier_button.halign = Gtk.Align.START;
+        add_modifier_button.margin = 6;
+        add_modifier_button.set_tooltip_text (_("Add another modification"));
+
+        var header_bar = new Gtk.HeaderBar ();
+        header_bar.set_title (_("Bulk Renamer"));
+        header_bar.show_close_button = true;
+        header_bar.pack_start (add_modifier_button);
+
+        set_titlebar (header_bar);
+
         var cancel_button = new Gtk.Button.with_label (_("Cancel"));
         cancel_button.margin = 3;
 
@@ -75,6 +87,11 @@ public class BulkRenamer.Window : Gtk.ApplicationWindow {
         cancel_button.clicked.connect (() => {
             destroy ();
         });
+
+        add_modifier_button.clicked.connect (() => {
+            renamer.add_modifier (true);
+        });
+
     }
 
     public void set_files (File[] files) {
