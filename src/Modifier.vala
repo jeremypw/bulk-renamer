@@ -28,7 +28,7 @@ public class Modifier : Gtk.Grid {
     private Gtk.Stack mode_stack;
     private Gtk.Stack position_stack;
     private Gtk.SpinButton digits_spin_button;
-    private Gtk.Entry number_entry;
+    private Gtk.SpinButton start_number_spin_button;
     private Gtk.Entry text_entry;
     private Gtk.Entry separator_entry;
     private Gtk.Entry search_entry;
@@ -54,21 +54,23 @@ public class Modifier : Gtk.Grid {
         text_entry = new Gtk.Entry ();
         text_entry.hexpand = true;
 
-        var digits_label = new Gtk.Label (_("Digits"));
-        digits_spin_button = new Gtk.SpinButton.with_range (0.0, 5.0, 1.0);
-        digits_spin_button.digits = 1;
-        digits_spin_button.set_value (1.0);
+        var start_number_label = new Gtk.Label (_("Start Number"));
+        start_number_spin_button = new Gtk.SpinButton.with_range (0, int.MAX, 1);
+        start_number_spin_button.digits = 0;
+        start_number_spin_button.set_value (0.0);
 
-        number_entry = new Gtk.Entry ();
-        number_entry.placeholder_text = _("Number from ");
-        number_entry.hexpand = true;
+        var digits_label = new Gtk.Label (_("Digits"));
+        digits_spin_button = new Gtk.SpinButton.with_range (0, 5, 1);
+        digits_spin_button.digits = 0;
+        digits_spin_button.set_value (1.0);
 
         var digits_grid = new Gtk.Grid ();
         digits_grid.orientation = Gtk.Orientation.HORIZONTAL;
         digits_grid.column_spacing = 6;
+        digits_grid.add (start_number_label);
+        digits_grid.add (start_number_spin_button);
         digits_grid.add (digits_label);
         digits_grid.add (digits_spin_button);
-        digits_grid.add (number_entry);
 
         date_format_combo = new Gtk.ComboBoxText ();
         date_format_combo.valign = Gtk.Align.CENTER;
@@ -170,12 +172,11 @@ public class Modifier : Gtk.Grid {
             changed ();
         });
 
-        number_entry.focus_out_event.connect (() => {
+        digits_spin_button.value_changed.connect (() => {
             changed ();
-            return Gdk.EVENT_PROPAGATE;
         });
 
-        number_entry.activate.connect (() => {
+        start_number_spin_button.value_changed.connect (() => {
             changed ();
         });
 
@@ -208,10 +209,6 @@ public class Modifier : Gtk.Grid {
         });
 
         separator_entry.activate.connect (() => {
-            changed ();
-        });
-
-        digits_spin_button.value_changed.connect (() => {
             changed ();
         });
 
@@ -262,7 +259,7 @@ public class Modifier : Gtk.Grid {
     }
 
     public string rename (string input, int index) {
-        var seq = index + int.parse (number_entry.text);
+        var seq = index + (int)(start_number_spin_button.get_value ());
         string new_text = "";
 
         switch (mode_combo.get_active ()) {
