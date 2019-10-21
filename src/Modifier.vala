@@ -19,7 +19,7 @@
  *
 */
 
-public class Modifier : Gtk.Grid {
+public class Modifier : Gtk.ListBoxRow {
     private Gtk.ComboBoxText position_combo;
     private Gtk.ComboBoxText mode_combo;
     private Gtk.ComboBoxText date_format_combo;
@@ -37,14 +37,16 @@ public class Modifier : Gtk.Grid {
 
     public bool allow_remove { get; set; }
 
-    public signal void changed ();
     public signal void remove_request ();
+    public signal void update_request ();
 
     construct {
-        orientation = Gtk.Orientation.HORIZONTAL;
-        column_spacing = 6;
-        margin_start = 12;
-        margin_end = 12;
+        margin_top = 3;
+        margin_bottom = 3;
+
+        var grid = new Gtk.Grid ();
+        grid.orientation = Gtk.Orientation.HORIZONTAL;
+        grid.column_spacing = 6;
 
         mode_combo = new Gtk.ComboBoxText ();
         mode_combo.valign = Gtk.Align.CENTER;
@@ -103,6 +105,7 @@ public class Modifier : Gtk.Grid {
 
         mode_stack = new Gtk.Stack ();
         mode_stack.valign = Gtk.Align.CENTER;
+        mode_stack.margin_start = 12;
         mode_stack.add_named (digits_grid, "NUMBER");
         mode_stack.add_named (text_entry, "TEXT");
         mode_stack.add_named (date_time_grid, "DATETIME");
@@ -114,6 +117,7 @@ public class Modifier : Gtk.Grid {
         var separator_label = new Gtk.Label (_("Separator:"));
 
         var separator_grid = new Gtk.Grid ();
+        separator_grid.margin_start = 12;
         separator_grid.orientation = Gtk.Orientation.HORIZONTAL;
         separator_grid.column_spacing = 6;
         separator_grid.add (separator_label);
@@ -140,7 +144,8 @@ public class Modifier : Gtk.Grid {
         position_grid.add (position_stack);
         position_grid.add (position_combo);
 
-        var remove_button = new Gtk.Button.from_icon_name ("list-remove", Gtk.IconSize.SMALL_TOOLBAR);
+        var remove_button = new Gtk.Button.from_icon_name ("list-remove-symbolic", Gtk.IconSize.SMALL_TOOLBAR);
+        remove_button.get_style_context ().add_class (Gtk.STYLE_CLASS_FLAT);
         remove_button.halign = Gtk.Align.END;
         remove_button.margin = 6;
         remove_button.valign = Gtk.Align.CENTER;
@@ -149,10 +154,12 @@ public class Modifier : Gtk.Grid {
         remove_revealer = new Gtk.Revealer ();
         remove_revealer.add (remove_button);
 
-        add (mode_combo);
-        add (mode_stack);
-        add (position_grid);
-        add (remove_revealer);
+        grid.add (mode_combo);
+        grid.add (mode_stack);
+        grid.add (position_grid);
+        grid.add (remove_revealer);
+
+        add (grid);
 
         show_all ();
 
@@ -160,40 +167,40 @@ public class Modifier : Gtk.Grid {
         position_combo.changed.connect (change_rename_position);
 
         date_format_combo.changed.connect (() => {
-            changed ();
+            update_request ();
         });
 
         date_type_combo.changed.connect (() => {
             date_picker_revealer.reveal_child = date_type_combo.get_active () == RenameDateType.CHOOSE;
             if (date_type_combo.get_active () == RenameDateType.NOW) {
-                changed ();
+                update_request ();
             }
         });
 
         date_picker.date_changed.connect (() => {
-            changed ();
+            update_request ();
         });
 
         digits_spin_button.value_changed.connect (() => {
-            changed ();
+            update_request ();
         });
 
         start_number_spin_button.value_changed.connect (() => {
-            changed ();
+            update_request ();
         });
 
         search_entry.focus_out_event.connect (() => {
-            changed ();
+            update_request ();
             return Gdk.EVENT_PROPAGATE;
         });
 
         search_entry.activate.connect (() => {
-            changed ();
+            update_request ();
         });
 
         text_entry.focus_out_event.connect (() => {
             if (text_entry.text != "") {
-                changed ();
+                update_request ();
             }
 
             return Gdk.EVENT_PROPAGATE;
@@ -201,22 +208,22 @@ public class Modifier : Gtk.Grid {
 
         text_entry.activate.connect (() => {
             if (text_entry.text != "") {
-                changed ();
+                update_request ();
             }
         });
 
         separator_entry.focus_out_event.connect (() => {
-            changed ();
+            update_request ();
             return Gdk.EVENT_PROPAGATE;
         });
 
         separator_entry.activate.connect (() => {
-            changed ();
+            update_request ();
         });
 
         position_combo.changed.connect (() => {
             text_entry.placeholder_text = ((RenamePosition)(position_combo.get_active ())).to_string ();
-            changed ();
+            update_request ();
         });
 
         remove_button.clicked.connect (() => {
@@ -247,7 +254,7 @@ public class Modifier : Gtk.Grid {
                 break;
         }
 
-        changed ();
+        update_request ();
     }
 
    public void change_rename_position () {
@@ -257,7 +264,7 @@ public class Modifier : Gtk.Grid {
             position_stack.visible_child_name = "SEPARATOR";
         }
 
-        changed ();
+        update_request ();
     }
 
     public string rename (string input, int index) {
