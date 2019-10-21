@@ -161,6 +161,8 @@ public class Renamer : Gtk.Grid {
         old_scrolled_window.propagate_natural_height = true;
         old_scrolled_window.add (old_file_names);
 
+        var vadj = old_scrolled_window.get_vadjustment ();
+
         var old_files_grid = new Gtk.Grid ();
         old_files_grid.valign = Gtk.Align.START;
         old_files_grid.orientation = Gtk.Orientation.VERTICAL;
@@ -175,6 +177,8 @@ public class Renamer : Gtk.Grid {
         var new_scrolled_window = new Gtk.ScrolledWindow (null, null);
         new_scrolled_window.hexpand = true;
         new_scrolled_window.propagate_natural_height = true;
+        new_scrolled_window.set_policy (Gtk.PolicyType.NEVER, Gtk.PolicyType.EXTERNAL);
+        new_scrolled_window.set_vadjustment (vadj);
         new_scrolled_window.add (new_file_names);
         new_scrolled_window.set_min_content_height (300);
         new_scrolled_window.set_max_content_height (900);
