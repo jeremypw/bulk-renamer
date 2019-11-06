@@ -44,7 +44,8 @@ public class Renamer : Gtk.Grid {
 
     private int number_of_files = 0;
 
-    public bool can_rename { get; set; }
+    public bool can_rename { get; set; default = false; }
+
     public bool can_undo { get; set; }
     public string directory { get; private set; default = ""; }
 
@@ -143,12 +144,14 @@ public class Renamer : Gtk.Grid {
         modifier_grid.add (action_bar);
 
         var cell = new Gtk.CellRendererText ();
+
         old_list = new Gtk.ListStore (1, typeof (string));
         old_list.set_default_sort_func (old_list_sorter);
         old_list.set_sort_column_id (Gtk.SortColumn.DEFAULT, Gtk.SortType.ASCENDING);
 
         old_file_names = new Gtk.TreeView.with_model (old_list);
         old_file_names.insert_column_with_attributes (-1, "ORIGINAL", cell, "text", 0);
+
         old_file_names.hexpand = true;
         old_file_names.set_headers_visible (false);
 
@@ -174,9 +177,14 @@ public class Renamer : Gtk.Grid {
         old_files_grid.add (old_files_header);
         old_files_grid.add (old_scrolled_window);
 
-        new_list = new Gtk.ListStore (1, typeof (string));
+        var toggle = new Gtk.CellRendererToggle ();
+        toggle.indicator_size = 9;
+        toggle.xalign = 1.0f;
+        var new_cell = new Gtk.CellRendererText ();
+        new_list = new Gtk.ListStore (2, typeof (string), typeof (bool));
         new_file_names = new Gtk.TreeView.with_model (new_list);
-        new_file_names.insert_column_with_attributes (-1,"NEW", cell, "text", 0);
+        var text_col = new_file_names.insert_column_with_attributes (-1,"NEW", new_cell, "text", 0, "sensitive", 1);
+        new_file_names.insert_column_with_attributes (-1, "VALID", toggle, "active", 1, "visible", 1);
         new_file_names.headers_visible = false;
 
         var new_scrolled_window = new Gtk.ScrolledWindow (null, null);
@@ -406,17 +414,19 @@ public class Renamer : Gtk.Grid {
             }
 
             var final_name = output_name.concat (extension);
+            bool name_valid = true;
 
             if (final_name == previous_final_name ||
                 final_name == file_name) {
 
                 debug ("blank or duplicate name");
+                name_valid = false;
                 can_rename = false;
                 /* TODO Visual indication of problem output name */
             }
 
             new_list.append (out new_iter);
-            new_list.@set (new_iter, 0, final_name);
+            new_list.@set (new_iter, 0, final_name, 1, name_valid, -1);
 
             previous_final_name = final_name;
             index++;
