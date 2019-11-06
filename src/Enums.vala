@@ -20,8 +20,8 @@
 */
 
 public enum RenameMode {
-    NUMBER,
     TEXT,
+    NUMBER,
     DATETIME,
     INVALID;
 

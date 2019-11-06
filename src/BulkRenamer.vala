@@ -72,7 +72,6 @@ public class Renamer : Gtk.Grid {
         base_name_combo.valign = Gtk.Align.CENTER;
         base_name_combo.insert (RenameBase.ORIGINAL, "ORIGINAL", RenameBase.ORIGINAL.to_string ());
         base_name_combo.insert (RenameBase.CUSTOM, "CUSTOM", RenameBase.CUSTOM.to_string ());
-        base_name_combo.set_active (RenameBase.ORIGINAL);
 
         base_name_entry = new Gtk.Entry ();
         base_name_entry.placeholder_text = _("Enter naming scheme");
@@ -208,6 +207,8 @@ public class Renamer : Gtk.Grid {
         add (modifier_grid);
         add (lists_grid);
 
+        reset ();
+
         sort_by_combo.changed.connect (() => {
             old_list.set_default_sort_func (old_list_sorter);
 
@@ -300,6 +301,23 @@ public class Renamer : Gtk.Grid {
         update_view ();
     }
 
+    public void reset () {
+        base_name_combo.set_active (RenameBase.ORIGINAL);
+        base_name_entry.text = "";
+
+        bool first = true;
+        foreach (var mod in modifier_chain) {
+            if (first) {
+                mod.reset ();
+                first = false;
+            } else {
+                mod.destroy ();
+            }
+        }
+
+        update_view ();
+    }
+
     public void rename_files () {
         var new_files = new File[number_of_files];
         int index = 0;
@@ -334,6 +352,8 @@ public class Renamer : Gtk.Grid {
         can_undo = true;
 
         replace_files (new_files);
+
+        reset ();
     }
 
     private uint view_update_timeout_id = 0;
@@ -357,13 +377,13 @@ public class Renamer : Gtk.Grid {
 
     private void update_view () {
         can_rename = true;
-        var tmp_new_list = new Gee.ArrayList<string> ();
         int index = 0;
         string output_name = "";
         string input_name = "";
         string file_name = "";
         string extension = "";
-        string last_final_name = "";
+
+        new_list.clear ();
 
         bool custom_basename = base_name_combo.get_active () == RenameBase.CUSTOM;
         Gtk.TreeIter? new_iter = null;
@@ -383,36 +403,20 @@ public class Renamer : Gtk.Grid {
 
             var final_name = output_name.concat (extension);
 
-            if (new_list.get_iter (out new_iter, p)) {
-                string existing_new_name;
-                new_list.@get (new_iter, 0, out existing_new_name);
-
-                if (existing_new_name == final_name) {
-                    critical ("Name not changed");
-                    can_rename = false;
-                }
-            }
-
             if (final_name == "" ||
-                final_name == last_final_name ||
                 final_name == file_name) {
 
-                critical ("blank or duplicate name");
+                debug ("blank or duplicate name");
                 can_rename = false;
                 /* TODO Visual indication of problem output name */
             }
 
-            tmp_new_list.add (final_name);
-            last_final_name = final_name;
+            new_list.append (out new_iter);
+            new_list.@set (new_iter, 0, final_name);
+
             index++;
             return false;
         });
-
-        new_list.clear ();
-        foreach (string new_name in tmp_new_list) {
-            new_list.append (out new_iter);
-            new_list.@set (new_iter, 0, new_name);
-        }
     }
 
     private string strip_extension (string filename, out string extension) {

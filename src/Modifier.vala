@@ -50,10 +50,9 @@ public class Modifier : Gtk.ListBoxRow {
 
         mode_combo = new Gtk.ComboBoxText ();
         mode_combo.valign = Gtk.Align.CENTER;
-        mode_combo.insert (RenameMode.NUMBER, "NUMBER", RenameMode.NUMBER.to_string ());
         mode_combo.insert (RenameMode.TEXT, "TEXT", RenameMode.TEXT.to_string ());
+        mode_combo.insert (RenameMode.NUMBER, "NUMBER", RenameMode.NUMBER.to_string ());
         mode_combo.insert (RenameMode.DATETIME, "DATETIME", RenameMode.DATETIME.to_string ());
-        mode_combo.active = RenameMode.NUMBER;
 
         text_entry = new Gtk.Entry ();
         text_entry.hexpand = true;
@@ -83,13 +82,11 @@ public class Modifier : Gtk.ListBoxRow {
         date_format_combo.insert (RenameDateFormat.LOCALE, "LOCALE", RenameDateFormat.LOCALE.to_string ());
         date_format_combo.insert (RenameDateFormat.ISO_DATE, "ISO_DATE", RenameDateFormat.ISO_DATE.to_string ());
         date_format_combo.insert (RenameDateFormat.ISO_DATETIME, "ISO_DATETIME", RenameDateFormat.ISO_DATETIME.to_string ());
-        date_format_combo.set_active (RenameDateFormat.DEFAULT_DATE);
 
         date_type_combo = new Gtk.ComboBoxText ();
         date_type_combo.valign = Gtk.Align.CENTER;
         date_type_combo.insert (RenameDateType.NOW, "NOW", RenameDateType.NOW.to_string ());
         date_type_combo.insert (RenameDateType.CHOOSE, "CHOOSE", RenameDateType.CHOOSE.to_string ());
-        date_type_combo.set_active (RenameDateType.NOW);
 
         date_picker = new Granite.Widgets.DatePicker ();
         date_picker_revealer = new Gtk.Revealer ();
@@ -229,6 +226,18 @@ public class Modifier : Gtk.ListBoxRow {
         remove_button.clicked.connect (() => {
             remove_request ();
         });
+
+        reset ();
+    }
+
+    public void reset () {
+        mode_combo.active = RenameMode.TEXT;
+        text_entry.text = "";
+        separator_entry.text = "";
+        search_entry.text = "";
+
+        date_format_combo.set_active (RenameDateFormat.DEFAULT_DATE);
+        date_type_combo.set_active (RenameDateType.NOW);
     }
 
     public Modifier (bool _allow_remove) {
