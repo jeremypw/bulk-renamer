@@ -54,12 +54,22 @@ public class BulkRenamer.Window : Gtk.ApplicationWindow {
 
         rename_button.get_style_context ().add_class (Gtk.STYLE_CLASS_SUGGESTED_ACTION);
 
+        var undo_button = new Gtk.Button.with_label (_("Undo"));
+        undo_button.margin = 3;
+        undo_button.sensitive = false;
+        renamer.bind_property ("can-undo",
+                                undo_button, "sensitive",
+                                GLib.BindingFlags.DEFAULT | GLib.BindingFlags.SYNC_CREATE);
+
         var bbox = new Gtk.ButtonBox (Gtk.Orientation.HORIZONTAL);
         bbox.vexpand = false;
         bbox.margin_bottom = 6;
         bbox.set_layout (Gtk.ButtonBoxStyle.END);
         bbox.add (cancel_button);
         bbox.add (rename_button);
+
+        bbox.add (undo_button);
+        bbox.set_child_secondary (undo_button, true);
 
         var grid = new Gtk.Grid ();
         grid.orientation = Gtk.Orientation.VERTICAL;
@@ -83,6 +93,10 @@ public class BulkRenamer.Window : Gtk.ApplicationWindow {
 
         cancel_button.clicked.connect (() => {
             destroy ();
+        });
+
+        undo_button.clicked.connect (() => {
+            renamer.undo ();
         });
     }
 

@@ -25,6 +25,7 @@ public class Renamer : Gtk.Grid {
     private Gee.HashMap<string, File> file_map;
     private Gee.HashMap<string, FileInfo> file_info_map;
     private Gee.ArrayList<Modifier> modifier_chain;
+    private Gee.LinkedList<Gee.HashMap<string, string>> undo_stack;
 
     private Gtk.Grid modifier_grid;
     private Gtk.ListBox modifier_listbox;
@@ -44,6 +45,7 @@ public class Renamer : Gtk.Grid {
     private int number_of_files = 0;
 
     public bool can_rename { get; set; }
+    public bool can_undo { get; set; }
     public string directory { get; private set; default = ""; }
 
     public Renamer (File[]? files = null) {
@@ -62,6 +64,7 @@ public class Renamer : Gtk.Grid {
         file_map = new Gee.HashMap<string, File> ();
         file_info_map = new Gee.HashMap<string, FileInfo> ();
         modifier_chain = new Gee.ArrayList<Modifier> ();
+        undo_stack = new Gee.LinkedList<Gee.HashMap<string, string>> ();
 
         var base_name_label = new Granite.HeaderLabel (_("Base Name"));
 
@@ -300,6 +303,8 @@ public class Renamer : Gtk.Grid {
     public void rename_files () {
         var new_files = new File[number_of_files];
         int index = 0;
+        var undo_map = new Gee.HashMap<string, string> ();
+
         old_list.@foreach ((m, p, i) => {
             string input_name = "";
             string output_name = "";
@@ -315,21 +320,20 @@ public class Renamer : Gtk.Grid {
                 try {
                     result = file.set_display_name (output_name);
                     new_files[index++] = result;
+                    undo_map.@set (output_name, input_name);
                 } catch (GLib.Error e) {
-                    return true;
+                    new_files[index++] = file;
+                    undo_map.@set (input_name, input_name);
                 }
             }
 
-            return false;
+            return false; /* Continue iteration (compare HashMap iterator which is opposite!) */
         });
 
-        old_list.clear ();
-        new_list.clear ();
-        number_of_files = 0;
-        file_map.clear ();
-        file_info_map.clear ();
-        add_files (new_files);
-        can_rename = false;
+        undo_stack.offer_head (undo_map);
+        can_undo = true;
+
+        replace_files (new_files);
     }
 
     private uint view_update_timeout_id = 0;
@@ -383,6 +387,7 @@ public class Renamer : Gtk.Grid {
 
             var stripped_name = output_name.strip ();
             if (stripped_name == "" || stripped_name == last_stripped_name) {
+                critical ("blank or duplicate name");
                 can_rename = false;
                 /* TODO Visual indication of problem output name */
             }
@@ -450,6 +455,47 @@ public class Renamer : Gtk.Grid {
         }
 
         return res;
+    }
+
+    private void replace_files (File[] files) {
+        old_list.clear ();
+        new_list.clear ();
+        number_of_files = 0;
+        file_map.clear ();
+        file_info_map.clear ();
+
+        add_files (files);
+    }
+
+    public void undo () {
+        Gee.HashMap<string, string>? restore_map = undo_stack.poll_head ();
+
+        if (restore_map != null) {
+            var new_files = new File[restore_map.size];
+            var restore_iterator = restore_map.map_iterator ();
+            int index = 0;
+
+            restore_iterator.@foreach ((new_name, original_name) => {
+                File? result = null;
+                var path = Path.build_path (Path.DIR_SEPARATOR_S, directory, new_name);
+                var file = File.new_for_path (path);
+
+                if (file != null) {
+                    try {
+                        result = file.set_display_name (original_name);
+                        new_files[index++] = result;
+                    } catch (GLib.Error e) {
+                        new_files[index++] = file;
+                    }
+                }
+
+                return true; /* Continue iteration */
+            });
+
+            replace_files (new_files);
+        }
+
+        can_undo = undo_stack.size > 0;
     }
 }
 
