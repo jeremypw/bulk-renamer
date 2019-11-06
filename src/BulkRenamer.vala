@@ -357,23 +357,22 @@ public class Renamer : Gtk.Grid {
 
     private void update_view () {
         can_rename = true;
-        new_list.clear ();
-
-        Gtk.TreeIter? iter = null;
+        var tmp_new_list = new Gee.ArrayList<string> ();
         int index = 0;
         string output_name = "";
         string input_name = "";
         string file_name = "";
         string extension = "";
-        string last_stripped_name = "";
+        string last_final_name = "";
 
         bool custom_basename = base_name_combo.get_active () == RenameBase.CUSTOM;
+        Gtk.TreeIter? new_iter = null;
+        old_list.@foreach ((m, p, iter) => {
+            old_list.@get (iter, 0, out file_name);
 
-        old_list.@foreach ((m, p, i) => {
             if (custom_basename) {
                 input_name = base_name_entry.get_text ();
             } else {
-                old_list.@get (i, 0, out file_name);
                 input_name = strip_extension (file_name, out extension);
             }
 
@@ -382,21 +381,38 @@ public class Renamer : Gtk.Grid {
                 input_name = output_name;
             }
 
-            new_list.append (out iter);
-            new_list.set (iter, 0, output_name.concat (extension));
+            var final_name = output_name.concat (extension);
 
-            var stripped_name = output_name.strip ();
-            if (stripped_name == "" || stripped_name == last_stripped_name) {
+            if (new_list.get_iter (out new_iter, p)) {
+                string existing_new_name;
+                new_list.@get (new_iter, 0, out existing_new_name);
+
+                if (existing_new_name == final_name) {
+                    critical ("Name not changed");
+                    can_rename = false;
+                }
+            }
+
+            if (final_name == "" ||
+                final_name == last_final_name ||
+                final_name == file_name) {
+
                 critical ("blank or duplicate name");
                 can_rename = false;
                 /* TODO Visual indication of problem output name */
             }
 
-            last_stripped_name = stripped_name;
+            tmp_new_list.add (final_name);
+            last_final_name = final_name;
             index++;
             return false;
         });
 
+        new_list.clear ();
+        foreach (string new_name in tmp_new_list) {
+            new_list.append (out new_iter);
+            new_list.@set (new_iter, 0, new_name);
+        }
     }
 
     private string strip_extension (string filename, out string extension) {
