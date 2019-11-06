@@ -469,33 +469,34 @@ public class Renamer : Gtk.Grid {
 
     public void undo () {
         Gee.HashMap<string, string>? restore_map = undo_stack.poll_head ();
+        can_undo = undo_stack.size > 0;
 
-        if (restore_map != null) {
-            var new_files = new File[restore_map.size];
-            var restore_iterator = restore_map.map_iterator ();
-            int index = 0;
-
-            restore_iterator.@foreach ((new_name, original_name) => {
-                File? result = null;
-                var path = Path.build_path (Path.DIR_SEPARATOR_S, directory, new_name);
-                var file = File.new_for_path (path);
-
-                if (file != null) {
-                    try {
-                        result = file.set_display_name (original_name);
-                        new_files[index++] = result;
-                    } catch (GLib.Error e) {
-                        new_files[index++] = file;
-                    }
-                }
-
-                return true; /* Continue iteration */
-            });
-
-            replace_files (new_files);
+        if (restore_map == null) {
+            return;
         }
 
-        can_undo = undo_stack.size > 0;
+        var new_files = new File[restore_map.size];
+        var restore_iterator = restore_map.map_iterator ();
+        int index = 0;
+
+        restore_iterator.@foreach ((new_name, original_name) => {
+            File? result = null;
+            var path = Path.build_path (Path.DIR_SEPARATOR_S, directory, new_name);
+            var file = File.new_for_path (path);
+
+            if (file != null) {
+                try {
+                    result = file.set_display_name (original_name);
+                    new_files[index++] = result;
+                } catch (GLib.Error e) {
+                    new_files[index++] = file;
+                }
+            }
+
+            return true; /* Continue iteration */
+        });
+
+        replace_files (new_files);
     }
 }
 
