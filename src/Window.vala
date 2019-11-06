@@ -32,11 +32,10 @@ public class BulkRenamer.Window : Gtk.ApplicationWindow {
 
     construct {
         title = _("Bulk Renamer");
-        set_size_request (600, 400);
-        resizable = false;
+        set_default_size (600, 400);
 
         renamer = new Renamer ();
-        renamer.margin = 6;
+        renamer.margin = 12;
 
         var header_bar = new Gtk.HeaderBar ();
         header_bar.set_title (_("Bulk Renamer"));
@@ -46,10 +45,10 @@ public class BulkRenamer.Window : Gtk.ApplicationWindow {
         set_titlebar (header_bar);
 
         var cancel_button = new Gtk.Button.with_label (_("Cancel"));
-        cancel_button.margin = 3;
+        cancel_button.margin = 6;
 
         var rename_button = new Gtk.Button.with_label (_("Rename"));
-        rename_button.margin = 3;
+        rename_button.margin = 6;
         rename_button.sensitive = false;
         renamer.bind_property ("can-rename",
                                 rename_button, "sensitive",
@@ -58,7 +57,7 @@ public class BulkRenamer.Window : Gtk.ApplicationWindow {
         rename_button.get_style_context ().add_class (Gtk.STYLE_CLASS_SUGGESTED_ACTION);
 
         var undo_button = new Gtk.Button.with_label (_("Undo"));
-        undo_button.margin = 3;
+        undo_button.margin = 6;
         undo_button.sensitive = false;
         renamer.bind_property ("can-undo",
                                 undo_button, "sensitive",
@@ -67,6 +66,8 @@ public class BulkRenamer.Window : Gtk.ApplicationWindow {
         var bbox = new Gtk.ButtonBox (Gtk.Orientation.HORIZONTAL);
         bbox.vexpand = false;
         bbox.margin_bottom = 6;
+        bbox.margin_start = 18;
+        bbox.margin_end = 18;
         bbox.set_layout (Gtk.ButtonBoxStyle.END);
         bbox.add (cancel_button);
         bbox.add (rename_button);

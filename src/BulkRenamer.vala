@@ -69,8 +69,8 @@ public class Renamer : Gtk.Grid {
         modifier_chain = new Gee.ArrayList<Modifier> ();
         undo_stack = new Gee.LinkedList<Gee.HashMap<string, string>> ();
 
-        var base_name_label = new Granite.HeaderLabel (_("Base Name"));
-
+        var base_name_label = new Granite.HeaderLabel (_("Base"));
+        base_name_label.get_style_context ().add_class (Granite.STYLE_CLASS_H2_LABEL);
         base_name_combo = new Gtk.ComboBoxText ();
         base_name_combo.valign = Gtk.Align.CENTER;
         base_name_combo.insert (RenameBase.ORIGINAL, "ORIGINAL", RenameBase.ORIGINAL.to_string ());
@@ -78,11 +78,13 @@ public class Renamer : Gtk.Grid {
 
         base_name_entry = new Gtk.Entry ();
         base_name_entry.placeholder_text = _("Enter naming scheme");
-        base_name_entry.hexpand = true;
+        base_name_entry.hexpand = false;
+        base_name_entry.set_max_width_chars (64);
+        base_name_entry.valign = Gtk.Align.CENTER;
 
         var base_name_entry_revealer = new Gtk.Revealer ();
         base_name_entry_revealer.add (base_name_entry);
-
+        base_name_entry_revealer.vexpand = false;
         var sort_by_label = new Gtk.Label (_("Sort by:"));
         sort_by_combo = new Gtk.ComboBoxText ();
         sort_by_combo.valign = Gtk.Align.CENTER;
@@ -111,15 +113,15 @@ public class Renamer : Gtk.Grid {
 
         var controls_grid = new Gtk.Grid ();
         controls_grid.orientation = Gtk.Orientation.HORIZONTAL;
-        controls_grid.column_spacing = 6;
-        controls_grid.margin = 6;
+        controls_grid.column_spacing = 12;
         controls_grid.margin_bottom = 12;
 
-        controls_grid.add (base_name_label);
-        controls_grid.add (base_name_combo);
-        controls_grid.add (base_name_entry_revealer);
+        controls_grid.attach (base_name_label, 0, 0, 2, 1);
+        controls_grid.attach (base_name_combo, 0, 1, 1, 1);
+        controls_grid.attach (base_name_entry_revealer, 1, 1, 1, 1);
 
         var modifiers_label = new Granite.HeaderLabel (_("Modifiers"));
+        modifiers_label.get_style_context ().add_class (Granite.STYLE_CLASS_H2_LABEL);
 
         modifier_listbox = new Gtk.ListBox ();
 
@@ -130,13 +132,12 @@ public class Renamer : Gtk.Grid {
         add_button.sensitive = true;
 
         var action_bar = new Gtk.ActionBar ();
-        action_bar.margin_top = 6;
+        action_bar.margin_top = 12;
         action_bar.get_style_context ().add_class (Gtk.STYLE_CLASS_INLINE_TOOLBAR);
         action_bar.pack_start (add_button);
 
         modifier_grid = new Gtk.Grid ();
         modifier_grid.orientation = Gtk.Orientation.VERTICAL;
-        modifier_grid.margin = 6;
         modifier_grid.margin_bottom = 12;
         modifier_grid.row_spacing = 0;
         modifier_grid.add (modifiers_label);
@@ -157,9 +158,14 @@ public class Renamer : Gtk.Grid {
 
         var old_files_header = new Gtk.Box (Gtk.Orientation.HORIZONTAL, 6);
         old_files_header.hexpand = true;
-        old_files_header.add (new Granite.HeaderLabel (_("Original Names")));
+        var original_label = new Granite.HeaderLabel (_("Original Names"));
+        original_label.get_style_context ().add_class (Granite.STYLE_CLASS_H2_LABEL);
+        original_label.valign = Gtk.Align.CENTER;
+        old_files_header.add (original_label);
         sort_by_grid.halign = Gtk.Align.END;
+        sort_by_grid.valign = Gtk.Align.CENTER;
         sort_type_grid.halign = Gtk.Align.END;
+        sort_type_grid.valign = Gtk.Align.CENTER;
         old_files_header.pack_end (sort_type_grid, false, false, 6);
         old_files_header.pack_end (sort_by_grid, false, false, 6);
 
@@ -197,7 +203,9 @@ public class Renamer : Gtk.Grid {
         new_scrolled_window.set_overlay_scrolling (true);
 
         var new_files_header = new Gtk.Box (Gtk.Orientation.HORIZONTAL, 6);
-        new_files_header.add (new Granite.HeaderLabel (_("New Names")));
+        var new_label = new Granite.HeaderLabel (_("New Names"));
+        new_label.get_style_context (). add_class (Granite.STYLE_CLASS_H2_LABEL);
+        new_files_header.add (new_label);
 
         var new_files_grid = new Gtk.Grid ();
         new_files_grid.valign = Gtk.Align.END;
@@ -207,7 +215,7 @@ public class Renamer : Gtk.Grid {
 
         var lists_grid = new Gtk.Grid ();
         lists_grid.orientation = Gtk.Orientation.HORIZONTAL;
-        lists_grid.column_spacing = 12;
+        lists_grid.column_spacing = 32;
         lists_grid.column_homogeneous = true;
         lists_grid.margin = 12;
         lists_grid.add (old_files_grid);

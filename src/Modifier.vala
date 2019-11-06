@@ -46,7 +46,7 @@ public class Modifier : Gtk.ListBoxRow {
 
         var grid = new Gtk.Grid ();
         grid.orientation = Gtk.Orientation.HORIZONTAL;
-        grid.column_spacing = 6;
+        grid.column_spacing = 12;
 
         mode_combo = new Gtk.ComboBoxText ();
         mode_combo.valign = Gtk.Align.CENTER;
@@ -55,7 +55,9 @@ public class Modifier : Gtk.ListBoxRow {
         mode_combo.insert (RenameMode.DATETIME, "DATETIME", RenameMode.DATETIME.to_string ());
 
         text_entry = new Gtk.Entry ();
-        text_entry.hexpand = true;
+        text_entry.set_max_width_chars (64);
+        text_entry.vexpand = false;
+        text_entry.hexpand = false;
 
         var start_number_label = new Gtk.Label (_("Start Number"));
         start_number_spin_button = new Gtk.SpinButton.with_range (0, int.MAX, 1);
@@ -102,7 +104,10 @@ public class Modifier : Gtk.ListBoxRow {
 
         mode_stack = new Gtk.Stack ();
         mode_stack.valign = Gtk.Align.CENTER;
-        mode_stack.margin_start = 12;
+        mode_stack.set_homogeneous (false);
+        mode_stack.vexpand = false;
+        mode_stack.hexpand = false;
+
         mode_stack.add_named (digits_grid, "NUMBER");
         mode_stack.add_named (text_entry, "TEXT");
         mode_stack.add_named (date_time_grid, "DATETIME");
@@ -112,6 +117,8 @@ public class Modifier : Gtk.ListBoxRow {
         separator_entry.placeholder_text = _("Separator");
         separator_entry.text = "";
         var separator_label = new Gtk.Label (_("Separator:"));
+        separator_label.hexpand = true;
+        separator_label.halign = Gtk.Align.END;
 
         var separator_grid = new Gtk.Grid ();
         separator_grid.margin_start = 12;
@@ -144,7 +151,6 @@ public class Modifier : Gtk.ListBoxRow {
         var remove_button = new Gtk.Button.from_icon_name ("list-remove-symbolic", Gtk.IconSize.SMALL_TOOLBAR);
         remove_button.get_style_context ().add_class (Gtk.STYLE_CLASS_FLAT);
         remove_button.halign = Gtk.Align.END;
-        remove_button.margin = 6;
         remove_button.valign = Gtk.Align.CENTER;
         remove_button.set_tooltip_text (_("Remove this modification"));
 
