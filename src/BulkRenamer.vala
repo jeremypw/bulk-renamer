@@ -145,6 +145,9 @@ public class Renamer : Gtk.Grid {
         modifier_grid.add (action_bar);
 
         var cell = new Gtk.CellRendererText ();
+        cell.ellipsize = Pango.EllipsizeMode.END;
+        cell.wrap_mode = Pango.WrapMode.CHAR;
+        cell.width_chars = 64;
 
         old_list = new Gtk.ListStore (1, typeof (string));
         old_list.set_default_sort_func (old_list_sorter);
@@ -187,6 +190,9 @@ public class Renamer : Gtk.Grid {
         toggle.indicator_size = 9;
         toggle.xalign = 1.0f;
         var new_cell = new Gtk.CellRendererText ();
+        new_cell.ellipsize = Pango.EllipsizeMode.END;
+        new_cell.wrap_mode = Pango.WrapMode.CHAR;
+        new_cell.width_chars = 64;
         new_list = new Gtk.ListStore (2, typeof (string), typeof (bool));
         new_file_names = new Gtk.TreeView.with_model (new_list);
         var text_col = new_file_names.insert_column_with_attributes (-1,"NEW", new_cell, "text", 0, "sensitive", 1);
