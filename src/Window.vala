@@ -32,6 +32,9 @@ public class BulkRenamer.Window : Gtk.ApplicationWindow {
 
     construct {
         title = _("Bulk Renamer");
+        set_size_request (600, 400);
+        resizable = false;
+
         renamer = new Renamer ();
         renamer.margin = 6;
 

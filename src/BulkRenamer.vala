@@ -55,6 +55,8 @@ public class Renamer : Gtk.Grid {
     }
 
     construct {
+        vexpand = true;
+
         info_map_mutex = Mutex ();
 
         can_rename = false;
@@ -160,8 +162,9 @@ public class Renamer : Gtk.Grid {
 
         var old_scrolled_window = new Gtk.ScrolledWindow (null, null);
         old_scrolled_window.hexpand = true;
-        old_scrolled_window.propagate_natural_height = true;
         old_scrolled_window.add (old_file_names);
+        old_scrolled_window.set_min_content_height (300);
+        old_scrolled_window.set_max_content_height (2000);
 
         var vadj = old_scrolled_window.get_vadjustment ();
 
@@ -178,19 +181,18 @@ public class Renamer : Gtk.Grid {
 
         var new_scrolled_window = new Gtk.ScrolledWindow (null, null);
         new_scrolled_window.hexpand = true;
-        new_scrolled_window.propagate_natural_height = true;
         new_scrolled_window.set_policy (Gtk.PolicyType.NEVER, Gtk.PolicyType.EXTERNAL);
         new_scrolled_window.set_vadjustment (vadj);
         new_scrolled_window.add (new_file_names);
         new_scrolled_window.set_min_content_height (300);
-        new_scrolled_window.set_max_content_height (900);
+        new_scrolled_window.set_max_content_height (2000);
+        new_scrolled_window.set_overlay_scrolling (true);
 
         var new_files_header = new Gtk.Box (Gtk.Orientation.HORIZONTAL, 6);
-        new_files_header.hexpand = true;
         new_files_header.add (new Granite.HeaderLabel (_("New Names")));
 
         var new_files_grid = new Gtk.Grid ();
-        new_files_grid.valign = Gtk.Align.START;
+        new_files_grid.valign = Gtk.Align.END;
         new_files_grid.orientation = Gtk.Orientation.VERTICAL;
         new_files_grid.add (new_files_header);
         new_files_grid.add (new_scrolled_window);
@@ -295,6 +297,7 @@ public class Renamer : Gtk.Grid {
         mod.remove_request.connect (() => {
             modifier_chain.remove (mod);
             mod.destroy ();
+            queue_draw ();
             update_view ();
         });
 
@@ -382,6 +385,7 @@ public class Renamer : Gtk.Grid {
         string input_name = "";
         string file_name = "";
         string extension = "";
+        string previous_final_name = "";
 
         new_list.clear ();
 
@@ -403,7 +407,7 @@ public class Renamer : Gtk.Grid {
 
             var final_name = output_name.concat (extension);
 
-            if (final_name == "" ||
+            if (final_name == previous_final_name ||
                 final_name == file_name) {
 
                 debug ("blank or duplicate name");
@@ -414,6 +418,7 @@ public class Renamer : Gtk.Grid {
             new_list.append (out new_iter);
             new_list.@set (new_iter, 0, final_name);
 
+            previous_final_name = final_name;
             index++;
             return false;
         });
