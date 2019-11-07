@@ -145,7 +145,7 @@ public class Renamer : Gtk.Grid {
         modifier_grid.add (action_bar);
 
         var cell = new Gtk.CellRendererText ();
-        cell.ellipsize = Pango.EllipsizeMode.END;
+        cell.ellipsize = Pango.EllipsizeMode.MIDDLE;
         cell.wrap_mode = Pango.WrapMode.CHAR;
         cell.width_chars = 64;
 
@@ -190,7 +190,7 @@ public class Renamer : Gtk.Grid {
         toggle.indicator_size = 9;
         toggle.xalign = 1.0f;
         var new_cell = new Gtk.CellRendererText ();
-        new_cell.ellipsize = Pango.EllipsizeMode.END;
+        new_cell.ellipsize = Pango.EllipsizeMode.MIDDLE;
         new_cell.wrap_mode = Pango.WrapMode.CHAR;
         new_cell.width_chars = 64;
         new_list = new Gtk.ListStore (2, typeof (string), typeof (bool));
@@ -341,6 +341,21 @@ public class Renamer : Gtk.Grid {
         }
 
         update_view ();
+    }
+
+    public void set_sort_order (RenameSortBy sort_by, bool reversed) {
+        sort_by_combo.set_active (sort_by);
+        sort_type_switch.active = reversed;
+    }
+
+    public void set_base_name (string? base_name) {
+        if (base_name != null) {
+            base_name_combo.set_active (RenameBase.CUSTOM);
+            base_name_entry.text = base_name;
+        } else {
+            base_name_combo.set_active (RenameBase.ORIGINAL);
+            base_name_entry.text = "";
+        }
     }
 
     public void rename_files () {

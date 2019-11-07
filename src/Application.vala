@@ -23,20 +23,20 @@ public class BulkRenamer.App : Gtk.Application {
     public const OptionEntry[] RENAMER_OPTIONS = {
         { "base-name", 'b', 0, OptionArg.STRING, out base_name,
         "Base name of renamed files", "BASE NAME" },
-        { "sort-by-date", 0, 0, OptionArg.NONE, out sort_by_date,
-        "Rename in date order", null },
-        { "sort-by-name", 0, 0, OptionArg.NONE, out sort_by_name,
-        "Rename in original name order", null },
-        { "reverse_order", 'r', 0, OptionArg.NONE, out reverse_order,
+        { "sort-by-created", 'c', 0, OptionArg.NONE, out sort_by_created,
+        "Rename in creation date order", null },
+        { "sort-by-modified", 'm', 0, OptionArg.NONE, out sort_by_modified,
+        "Rename in modification date order", null },
+        { "reverse_order", 'r', 0, OptionArg.NONE, out sort_reversed,
         "Reverse sort order", null },
         { null }
     };
 
 
-    public static string base_name;
-    public static bool sort_by_date = false;
-    public static bool sort_by_name = false;
-    public static bool reverse_order = false;
+    public static string? base_name = null;
+    public static bool sort_by_created = false;
+    public static bool sort_by_modified = false;
+    public static bool sort_reversed = false;
 
     private BulkRenamer.Window? main_window;
 

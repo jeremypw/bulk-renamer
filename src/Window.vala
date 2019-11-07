@@ -102,6 +102,16 @@ public class BulkRenamer.Window : Gtk.ApplicationWindow {
         undo_button.clicked.connect (() => {
             renamer.undo ();
         });
+
+        renamer.set_base_name (BulkRenamer.App.base_name);
+
+        if (BulkRenamer.App.sort_by_created) {
+            renamer.set_sort_order (RenameSortBy.CREATED, BulkRenamer.App.sort_reversed);
+        } else if (BulkRenamer.App.sort_by_modified) {
+            renamer.set_sort_order (RenameSortBy.MODIFIED, BulkRenamer.App.sort_reversed);
+        } else {
+            renamer.set_sort_order (RenameSortBy.NAME, BulkRenamer.App.sort_reversed);
+        }
     }
 
     public void set_files (File[] files) {
