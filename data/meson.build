@@ -8,6 +8,11 @@ install_data (
     install_dir: join_paths(get_option('datadir'), 'icons', 'hicolor', 'scalable', 'apps')
 )
 
+install_data (
+    join_paths('icons', meson.project_name () + '.svg'),
+    install_dir: join_paths(get_option('datadir'), 'icons', 'hicolor', '48x48', 'apps')
+)
+
 i18n.merge_file (
     'desktop',
     input: meson.project_name () + '.desktop.in',
