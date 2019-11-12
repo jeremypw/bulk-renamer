@@ -1,0 +1,21 @@
+[Desktop Entry]
+Type=Application
+Name=Bulk Renamer
+Comment=Rename multiple files according to one or more rules
+Keywords=System;Utility;Contractor
+GenericName=File Renamer;
+
+Exec=com.github.jeremypw.bulk-renamer %F
+#TRANSLATORS: Please do not translate the icon name
+Icon=com.github.jeremypw.bulk-renamer
+Terminal=false
+StartupNotify=true
+Categories=Utility;
+Actions=AboutDialog;
+X-GNOME-Gettext-Domain=com.github.jeremypw.bulk-renamer
+X-GNOME-UsesNotifications=false
+
+[Desktop Action AboutDialog]
+Exec=xdg-open appstream://com.github.jeremypw.bulk-renamer.desktop
+Name=About Bulk Renamer
+

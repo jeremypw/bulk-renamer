@@ -12,7 +12,7 @@ Currently supports three different rename modes:
 The file extension is excluded from renaming.
 
 [![License: GPL v3](https://img.shields.io/badge/License-GPL%20v3-blue.svg)](http://www.gnu.org/licenses/gpl-3.0)
-![Screenshot](/data/Screenshot.png?raw=true "Screenshot")
+![Screenshot](/data/Screenshots/mainwindow.png?raw=true "Screenshot")
 
 ### Dependencies
 These dependencies must be present before building
