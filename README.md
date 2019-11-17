@@ -1,8 +1,8 @@
-# Bulk-renamer
+# ![icon](data/icons/com.github.jeremypw.bulk-renamer-48.svg) Bulk-renamer
+[![License: GPL v3](https://img.shields.io/badge/License-GPL%20v3-blue.svg)](http://www.gnu.org/licenses/gpl-3.0)
+
 Bulk file renamer providing a contractor plugin for Pantheon Files, the elementaryos file browser.
 It may also be used as a stand-alone app or from the commandline.
-
-It is based on the work of Vartan Belavejian <https://github.com/VartanBelavejian/ElementaryBulkRenamer>
 
 Currently supports three different rename modes:
 * adding numbers to the original name or to a new base.
@@ -11,7 +11,6 @@ Currently supports three different rename modes:
 
 The file extension is excluded from renaming.
 
-[![License: GPL v3](https://img.shields.io/badge/License-GPL%20v3-blue.svg)](http://www.gnu.org/licenses/gpl-3.0)
 ![Screenshot](/data/Screenshots/mainwindow.png?raw=true "Screenshot")
 
 ### Dependencies
@@ -41,6 +40,27 @@ You will now find that the context menu in Pantheon Files shows an extra entry w
 has been selected. Clicking on this option results in the renamer window being launched with the selected files
 appearing in the "Old Name" list.  You can also lauch the renamer from the command line with:
 ```
-com.github.jeremypw.bulk-renamer
+com.github.jeremypw.bulk-renamer [OPTIONS] [FILES]
 ```
+
+Current options are:
+
+```
+Help Options:
+  -h, --help                    Show help options
+  --help-all                    Show all help options
+  --help-gapplication           Show GApplication options
+  --help-gtk                    Show GTK+ Options
+
+Application Options:
+  -b, --base-name=BASE NAME     Base name of renamed files
+  -c, --sort-by-created         Rename in creation date order
+  -m, --sort-by-modified        Rename in modification date order
+  -r, --reverse_order           Reverse sort order
+  --display=DISPLAY             X display to use
+
+```
+
+###### *This app is based on the work of Vartan Belavejian <https://github.com/VartanBelavejian/ElementaryBulkRenamer>*
+
 

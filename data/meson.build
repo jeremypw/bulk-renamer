@@ -3,14 +3,20 @@ install_data(
     install_dir: join_paths(get_option('datadir'), 'contractor')
 )
 
-install_data (
-    join_paths('icons', meson.project_name () + '.svg'),
-    install_dir: join_paths(get_option('datadir'), 'icons', 'hicolor', 'scalable', 'apps')
-)
+icon_sizes = ['16', '24', '32', '48', '64', '128']
+
+foreach i : icon_sizes
+    install_data (
+        join_paths('icons', meson.project_name () + '-' + i + '.svg'),
+        rename: meson.project_name () + '.svg',
+        install_dir: join_paths(get_option('datadir'), 'icons', 'hicolor', i + 'x' + i, 'apps')
+    )
+endforeach
 
 install_data (
-    join_paths('icons', meson.project_name () + '.svg'),
-    install_dir: join_paths(get_option('datadir'), 'icons', 'hicolor', '48x48', 'apps')
+    join_paths('icons', meson.project_name () + '-48.svg'),
+    rename: meson.project_name () + '.svg',
+    install_dir: join_paths(get_option('datadir'), 'icons', 'hicolor', 'scalable', 'apps')
 )
 
 i18n.merge_file (
