@@ -195,7 +195,7 @@ public class Renamer : Gtk.Grid {
         new_cell.width_chars = 64;
         new_list = new Gtk.ListStore (2, typeof (string), typeof (bool));
         new_file_names = new Gtk.TreeView.with_model (new_list);
-        var text_col = new_file_names.insert_column_with_attributes (-1,"NEW", new_cell, "text", 0, "sensitive", 1);
+        var text_col = new_file_names.insert_column_with_attributes (-1, "NEW", new_cell, "text", 0, "sensitive", 1);
         new_file_names.insert_column_with_attributes (-1, "VALID", toggle, "active", 1, "visible", 1);
         new_file_names.headers_visible = false;
 
@@ -563,5 +563,3 @@ public class Renamer : Gtk.Grid {
         replace_files (new_files);
     }
 }
-
-

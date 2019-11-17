@@ -79,11 +79,20 @@ public class Modifier : Gtk.ListBoxRow {
 
         date_format_combo = new Gtk.ComboBoxText ();
         date_format_combo.valign = Gtk.Align.CENTER;
-        date_format_combo.insert (RenameDateFormat.DEFAULT_DATE, "DEFAULT_DATE", RenameDateFormat.DEFAULT_DATE.to_string ());
-        date_format_combo.insert (RenameDateFormat.DEFAULT_DATETIME, "DEFAULT_DATETIME", RenameDateFormat.DEFAULT_DATETIME.to_string ());
-        date_format_combo.insert (RenameDateFormat.LOCALE, "LOCALE", RenameDateFormat.LOCALE.to_string ());
-        date_format_combo.insert (RenameDateFormat.ISO_DATE, "ISO_DATE", RenameDateFormat.ISO_DATE.to_string ());
-        date_format_combo.insert (RenameDateFormat.ISO_DATETIME, "ISO_DATETIME", RenameDateFormat.ISO_DATETIME.to_string ());
+        date_format_combo.insert (RenameDateFormat.DEFAULT_DATE, "DEFAULT_DATE",
+                                  RenameDateFormat.DEFAULT_DATE.to_string ());
+
+        date_format_combo.insert (RenameDateFormat.DEFAULT_DATETIME, "DEFAULT_DATETIME",
+                                  RenameDateFormat.DEFAULT_DATETIME.to_string ());
+
+        date_format_combo.insert (RenameDateFormat.LOCALE, "LOCALE",
+                                  RenameDateFormat.LOCALE.to_string ());
+
+        date_format_combo.insert (RenameDateFormat.ISO_DATE, "ISO_DATE",
+                                  RenameDateFormat.ISO_DATE.to_string ());
+
+        date_format_combo.insert (RenameDateFormat.ISO_DATETIME, "ISO_DATETIME",
+                                  RenameDateFormat.ISO_DATETIME.to_string ());
 
         date_type_combo = new Gtk.ComboBoxText ();
         date_type_combo.valign = Gtk.Align.CENTER;

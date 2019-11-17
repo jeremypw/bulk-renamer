@@ -127,7 +127,7 @@ public enum RenameDateType {
     }
 }
 
-public enum RenameBase{
+public enum RenameBase {
     ORIGINAL,
     CUSTOM;
 
