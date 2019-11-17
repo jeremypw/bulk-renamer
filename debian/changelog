@@ -1,0 +1,12 @@
+com.github.jeremypw.bulk-renamer (1.0.0) bionic; urgency=low
+
+  * Initial release.
+  * Use original name or a new constant name as a basis for renaming.
+  * Add a number sequence, date or text before or after the basename.
+  * Choose an arbitrary separator for new text.
+  * Replace a specified part of the name with other text.
+  * Apply several rules in sequence.
+  * See the results before renaming.
+  * Undo the last rename operation while window is open.
+
+ -- Jeremy Wootten <jeremywootten@gmail.com>  Sun, 17 Nov 2019 15:00:00 +0000
