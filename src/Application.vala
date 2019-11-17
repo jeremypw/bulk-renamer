@@ -37,11 +37,23 @@ public class BulkRenamer.App : Gtk.Application {
     public static bool sort_by_created = false;
     public static bool sort_by_modified = false;
     public static bool sort_reversed = false;
+    public static string[] file_names = {};
 
     private BulkRenamer.Window? main_window;
 
    construct {
         application_id = "com.github.jeremypw.bulk-renamer";
+        set_option_context_summary (N_("Rename files according to rules"));
+        set_option_context_description (N_("""
+The rules used for renaming are chosen through an application window.
+Numbers, dates or text may be added before or after the name, with a chosen separator.
+The whole of, or parts of, the original name may be replaced.
+Several rules may be applied sequentially.
+The results are previewed before committing to renaming.
+It is possible to undo the last renaming while the window is open.
+"""));
+
+        set_option_context_parameter_string (N_("[FILES]"));
         flags = ApplicationFlags.HANDLES_OPEN;
         Intl.setlocale (LocaleCategory.ALL, "");
 
@@ -81,7 +93,6 @@ public class BulkRenamer.App : Gtk.Application {
 
         main_window.present ();
     }
-
 }
 
 public static int main (string[] args) {
