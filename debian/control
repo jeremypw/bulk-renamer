@@ -13,7 +13,7 @@ Build-Depends: meson (>= 0.42.0),
                libgranite-dev (>= 5.2.0)
 Standards-Version: 4.1.1
 
-Package: com.github.jeremypw.gnonograms
+Package: com.github.jeremypw.bulk-renamer
 Architecture: any
 Description: Rename multiple files simultaneously according to chosen rules.
 Depends: ${misc:Depends}, ${shlibs:Depends}
