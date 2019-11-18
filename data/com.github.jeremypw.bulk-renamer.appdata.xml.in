@@ -50,9 +50,25 @@
         <category>Utility</category>
     </categories>
     <releases>
-        <release version="1.0" date="2019-11-12" urgency="low">
+        <release version="1.0.1" date="2019-11-18" urgency="low">
+            <description>
+                <p>Fix validation of desktop and appdata files</p>
+            </description>
+        </release>
+    </releases>
+    <releases>
+        <release version="1.0.0" date="2019-11-12" urgency="low">
             <description>
                 <p>Initial release</p>
+                <ul>
+                    <li>Use original name or a new constant name as a basis for renaming</li>
+                    <li> Add a number sequence, date or text before or after the basename</li>
+                    <li>Choose an arbitrary separator for new text</li>
+                    <li>Replace a specified part of the name with other text</li>
+                    <li>Apply several rules in sequences</li>
+                    <li>See the results before renaming</li>
+                    <li>Undo the last rename operation while window is open</li>
+                </ul>
             </description>
         </release>
     </releases>
