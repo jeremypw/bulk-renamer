@@ -2,7 +2,7 @@
 Type=Application
 Name=Bulk Renamer
 Comment=Rename multiple files according to one or more rules
-Keywords=System;Utility;Contractor
+Keywords=System;Utility;Contractor;
 GenericName=File Renamer;
 
 Exec=com.github.jeremypw.bulk-renamer %F
