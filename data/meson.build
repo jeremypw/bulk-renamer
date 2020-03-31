@@ -1,5 +1,5 @@
 install_data(
-    'bulk-renamer.contract',
+    'redub.contract',
     install_dir: join_paths(get_option('datadir'), 'contractor')
 )
 

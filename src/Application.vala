@@ -42,8 +42,8 @@ public class BulkRenamer.App : Gtk.Application {
     private BulkRenamer.Window? main_window;
 
    construct {
-        application_id = "com.github.jeremypw.bulk-renamer";
-        set_option_context_summary (N_("Rename files according to rules"));
+        application_id = "com.github.jeremypw.redub";
+        set_option_context_summary (N_("Rename multiple files according to rules"));
         set_option_context_description (N_("""
 The rules used for renaming are chosen through an application window.
 Numbers, dates or text may be added before or after the name, with a chosen separator.

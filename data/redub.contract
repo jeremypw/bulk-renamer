@@ -1,0 +1,7 @@
+[Contractor Entry]
+Name=Rename Files
+Icon=com.github.jeremypw.redub
+Description=Rename multiple files according to rules
+MimeType=image;audio;video;text;application;
+Exec=com.github.jeremypw.redub %F
+Gettext-Domain=com.github.jeremypw.redub
