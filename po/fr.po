@@ -1,0 +1,161 @@
+# French translations for io.github.jeremypw.bulk-renamer package.
+# Copyright (C) 2020 THE io.github.jeremypw.bulk-renamer'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the io.github.jeremypw.bulk-renamer package.
+# Automatically generated, 2020.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: io.github.jeremypw.bulk-renamer\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2020-08-02 16:49+0100\n"
+"PO-Revision-Date: 2020-08-02 15:36+0100\n"
+"Last-Translator: Automatically generated\n"
+"Language-Team: none\n"
+"Language: fr\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+
+#: src/BulkRenamer.vala:72
+msgid "Base"
+msgstr "Base"
+
+#: src/BulkRenamer.vala:80
+msgid "Enter naming scheme"
+msgstr "Entrez le schéma de denomination"
+
+#: src/BulkRenamer.vala:88
+msgid "Sort by:"
+msgstr "Trier par:"
+
+#: src/BulkRenamer.vala:103
+msgid "Reverse"
+msgstr "Inverser"
+
+#: src/BulkRenamer.vala:123
+msgid "Modifiers"
+msgstr "Modificateurs"
+
+#: src/BulkRenamer.vala:131
+msgid "Add another modifier"
+msgstr ""
+
+#: src/BulkRenamer.vala:164
+msgid "Original Names"
+msgstr "Noms originaux"
+
+#: src/BulkRenamer.vala:212
+msgid "New Names"
+msgstr "Nouveaux noms"
+
+#: src/Enums.vala:31
+msgid "Number sequence"
+msgstr "Séquence numérique"
+
+#: src/Enums.vala:34
+msgid "Text"
+msgstr "Texte"
+
+#: src/Enums.vala:37
+msgid "Date"
+msgstr "Date"
+
+#: src/Enums.vala:53
+msgid "Suffix"
+msgstr "Suffixe"
+
+#: src/Enums.vala:56
+msgid "Prefix"
+msgstr "Préfixe"
+
+#: src/Enums.vala:59
+msgid "Replace"
+msgstr "Remplacer"
+
+#: src/Enums.vala:75
+msgid "Name"
+msgstr "Nom"
+
+#: src/Enums.vala:78
+msgid "Creation Date"
+msgstr "Date de création"
+
+#: src/Enums.vala:81
+msgid "Last modification date"
+msgstr "Date de la dernière modification"
+
+#: src/Enums.vala:99
+msgid "Default Format - Date only"
+msgstr "Format par defaut - Date seulement"
+
+#: src/Enums.vala:101
+msgid "Default Format - Date and Time"
+msgstr "Format par defaut - Date et heure"
+
+#: src/Enums.vala:103
+msgid "Locale Format - Date and Time"
+msgstr "Format des paramètres regionaux - Date et heure"
+
+#: src/Enums.vala:105
+msgid "ISO 8601 Format - Date only"
+msgstr "Format ISO 8601 - Date seulement"
+
+#: src/Enums.vala:107
+msgid "ISO 8601 Format - Date and Time"
+msgstr "Format ISO 8601 - Date et heure"
+
+#: src/Enums.vala:121
+msgid "Current Date"
+msgstr "Date actuelle"
+
+#: src/Enums.vala:123
+msgid "Choose a date"
+msgstr "Choisissez une date"
+
+#: src/Enums.vala:137
+msgid "Original filename"
+msgstr "Nom de fichier d'origine"
+
+#: src/Enums.vala:139
+msgid "Enter a base name"
+msgstr "Entrez un nom de base"
+
+#: src/Modifier.vala:62
+msgid "Start Number"
+msgstr "Numero de depart"
+
+#: src/Modifier.vala:67
+msgid "Digits"
+msgstr "Chiffres"
+
+#: src/Modifier.vala:126
+msgid "Separator"
+msgstr "Séparateur"
+
+#: src/Modifier.vala:128
+msgid "Separator:"
+msgstr "Séparateur:"
+
+#: src/Modifier.vala:140
+msgid "Target text"
+msgstr "Texte cible"
+
+#: src/Modifier.vala:164
+msgid "Remove this modification"
+msgstr "Supprimer cette modification"
+
+#: src/Window.vala:43
+msgid "Cancel"
+msgstr "Fermer"
+
+#: src/Window.vala:46
+msgid "Rename"
+msgstr "Renommer"
+
+#: src/plugin.vala:30
+msgid "Rename Selected Files"
+msgstr "Renommer les fichiers sélectionnés"
+
+#~ msgid "Undo"
+#~ msgstr "Annuler"

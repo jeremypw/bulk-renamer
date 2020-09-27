@@ -1,0 +1,91 @@
+# French translations for extra package.
+# Copyright (C) 2020 THE extra'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the extra package.
+# Automatically generated, 2020.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: extra\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2020-08-02 15:36+0100\n"
+"PO-Revision-Date: 2020-08-02 15:36+0100\n"
+"Last-Translator: Automatically generated\n"
+"Language-Team: none\n"
+"Language: fr\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=ASCII\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+
+#: data/io.github.jeremypw.bulk-renamer.appdata.xml.in:7
+msgid "Bulk Renamer plugin"
+msgstr ""
+
+#: data/io.github.jeremypw.bulk-renamer.appdata.xml.in:8
+msgid ""
+"Plugin for Files to rename multiple files according to one or more rules"
+msgstr ""
+
+#: data/io.github.jeremypw.bulk-renamer.appdata.xml.in:10
+msgid ""
+"Adds menu option to rename selected files by applying on or more rules to "
+"the original name or to a new basename"
+msgstr ""
+
+#: data/io.github.jeremypw.bulk-renamer.appdata.xml.in:12
+msgid ""
+"Add an index number with a chosen starting point and digits as a prefix or "
+"suffix"
+msgstr ""
+
+#: data/io.github.jeremypw.bulk-renamer.appdata.xml.in:13
+msgid "Add a date (current, creation or modification) as a prefix or suffix"
+msgstr ""
+
+#: data/io.github.jeremypw.bulk-renamer.appdata.xml.in:14
+msgid "Add or replace text"
+msgstr ""
+
+#: data/io.github.jeremypw.bulk-renamer.appdata.xml.in:16
+msgid "A chosed separator may be inserted together with the new text."
+msgstr ""
+
+#: data/io.github.jeremypw.bulk-renamer.appdata.xml.in:55
+msgid "Initial release as Files plugin"
+msgstr ""
+
+#: data/io.github.jeremypw.bulk-renamer.appdata.xml.in:57
+msgid "Use original name or a new constant name as a basis for renaming"
+msgstr ""
+
+#: data/io.github.jeremypw.bulk-renamer.appdata.xml.in:58
+msgid "Add a number sequence, date or text before or after the basename"
+msgstr ""
+
+#: data/io.github.jeremypw.bulk-renamer.appdata.xml.in:59
+msgid "Choose an arbitrary separator for new text"
+msgstr ""
+
+#: data/io.github.jeremypw.bulk-renamer.appdata.xml.in:60
+msgid "Replace a specified part of the name with other text"
+msgstr ""
+
+#: data/io.github.jeremypw.bulk-renamer.appdata.xml.in:61
+msgid "Apply several rules in sequences"
+msgstr ""
+
+#: data/io.github.jeremypw.bulk-renamer.appdata.xml.in:62
+msgid "See the results before renaming"
+msgstr ""
+
+#: data/io.github.jeremypw.bulk-renamer.appdata.xml.in:63
+msgid "Undo the last rename operation while dialog is open"
+msgstr ""
+
+#: data/io.github.jeremypw.bulk-renamer.appdata.xml.in:73
+msgid "Main Dialog"
+msgstr ""
+
+#: data/io.github.jeremypw.bulk-renamer.appdata.xml.in:78
+msgid "Jeremy Paul Wootten"
+msgstr ""
