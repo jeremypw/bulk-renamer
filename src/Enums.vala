@@ -62,6 +62,22 @@ public enum RenamePosition {
                 assert_not_reached ();
         }
     }
+
+    public string to_placeholder () {
+        switch (this) {
+            case RenamePosition.SUFFIX:
+                return _("Text to put at the end");
+
+            case RenamePosition.PREFIX:
+                return _("Text to put at the start");
+
+            case RenamePosition.REPLACE:
+                return _("Text to replace the target");
+
+            default:
+                assert_not_reached ();
+        }
+    }
 }
 
 public enum RenameSortBy {

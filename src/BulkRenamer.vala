@@ -1,6 +1,6 @@
 /*
  * Copyright (C) 2010-2017  Vartan Belavejian
- * Copyright (C) 2019      Jeremy Wootten
+ * Copyright (C) 2019-2020     Jeremy Wootten
  *
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -34,6 +34,7 @@ public class Renamer : Gtk.Grid {
     private Gtk.TreeView new_file_names;
     private Gtk.ListStore old_list;
     private Gtk.ListStore new_list;
+    private Icon invalid_icon;
 
     private Gtk.Entry base_name_entry;
     private Gtk.ComboBoxText base_name_combo;
@@ -45,8 +46,8 @@ public class Renamer : Gtk.Grid {
     private int number_of_files = 0;
 
     public bool can_rename { get; set; default = false; }
-
     public bool can_undo { get; set; }
+
     public string directory { get; private set; default = ""; }
 
     public Renamer (File[]? files = null) {
@@ -56,10 +57,8 @@ public class Renamer : Gtk.Grid {
     }
 
     construct {
-        vexpand = true;
-
         info_map_mutex = Mutex ();
-
+        invalid_icon = new ThemedIcon.with_default_fallbacks ("dialog-warning");
         can_rename = false;
         orientation = Gtk.Orientation.VERTICAL;
         directory = "";
@@ -71,50 +70,66 @@ public class Renamer : Gtk.Grid {
 
         var base_name_label = new Granite.HeaderLabel (_("Base"));
         base_name_label.get_style_context ().add_class (Granite.STYLE_CLASS_H2_LABEL);
-        base_name_combo = new Gtk.ComboBoxText ();
-        base_name_combo.valign = Gtk.Align.CENTER;
+
+        base_name_combo = new Gtk.ComboBoxText () {
+            valign = Gtk.Align.CENTER
+        };
         base_name_combo.insert (RenameBase.ORIGINAL, "ORIGINAL", RenameBase.ORIGINAL.to_string ());
         base_name_combo.insert (RenameBase.CUSTOM, "CUSTOM", RenameBase.CUSTOM.to_string ());
 
-        base_name_entry = new Gtk.Entry ();
-        base_name_entry.placeholder_text = _("Enter naming scheme");
-        base_name_entry.hexpand = false;
-        base_name_entry.set_max_width_chars (64);
-        base_name_entry.valign = Gtk.Align.CENTER;
+        base_name_entry = new Gtk.Entry () {
+            placeholder_text = _("Enter naming scheme"),
+            hexpand = false,
+            max_width_chars = 64,
+            valign = Gtk.Align.CENTER
+        };
 
-        var base_name_entry_revealer = new Gtk.Revealer ();
+        var base_name_entry_revealer = new Gtk.Revealer () {
+            vexpand = false
+        };
         base_name_entry_revealer.add (base_name_entry);
-        base_name_entry_revealer.vexpand = false;
+
         var sort_by_label = new Gtk.Label (_("Sort by:"));
-        sort_by_combo = new Gtk.ComboBoxText ();
-        sort_by_combo.valign = Gtk.Align.CENTER;
-        sort_by_combo.margin = 3;
+
+        sort_by_combo = new Gtk.ComboBoxText () {
+            valign = Gtk.Align.CENTER,
+            margin = 3
+        };
         sort_by_combo.insert (RenameSortBy.NAME, "NAME", RenameSortBy.NAME.to_string ());
         sort_by_combo.insert (RenameSortBy.CREATED, "CREATED", RenameSortBy.CREATED.to_string ());
         sort_by_combo.insert (RenameSortBy.MODIFIED, "MODIFIED", RenameSortBy.MODIFIED.to_string ());
         sort_by_combo.set_active (RenameSortBy.NAME);
 
-        var sort_by_grid = new Gtk.Grid ();
-        sort_by_grid.orientation = Gtk.Orientation.HORIZONTAL;
-        sort_by_grid.column_spacing = 6;
+        var sort_by_grid = new Gtk.Grid () {
+            orientation = Gtk.Orientation.HORIZONTAL,
+            column_spacing = 6,
+            halign = Gtk.Align.END,
+            valign = Gtk.Align.CENTER
+        };
         sort_by_grid.add (sort_by_label);
         sort_by_grid.add (sort_by_combo);
 
         var sort_type_label = new Gtk.Label (_("Reverse"));
-        sort_type_switch = new Gtk.Switch ();
-        sort_type_switch.valign = Gtk.Align.CENTER;
 
-        var sort_type_grid = new Gtk.Grid ();
-        sort_type_grid.margin = 3;
-        sort_type_grid.orientation = Gtk.Orientation.HORIZONTAL;
-        sort_type_grid.column_spacing = 6;
+        sort_type_switch = new Gtk.Switch () {
+            valign = Gtk.Align.CENTER
+        };
+
+        var sort_type_grid = new Gtk.Grid () {
+            orientation = Gtk.Orientation.HORIZONTAL,
+            column_spacing = 6,
+            halign = Gtk.Align.END,
+            valign = Gtk.Align.CENTER,
+            margin = 3
+        };
         sort_type_grid.add (sort_type_switch);
         sort_type_grid.add (sort_type_label);
 
-        var controls_grid = new Gtk.Grid ();
-        controls_grid.orientation = Gtk.Orientation.HORIZONTAL;
-        controls_grid.column_spacing = 12;
-        controls_grid.margin_bottom = 12;
+        var controls_grid = new Gtk.Grid () {
+            orientation = Gtk.Orientation.HORIZONTAL,
+            column_spacing = 12,
+            margin_bottom = 12
+        };
 
         controls_grid.attach (base_name_label, 0, 0, 2, 1);
         controls_grid.attach (base_name_combo, 0, 1, 1, 1);
@@ -125,105 +140,136 @@ public class Renamer : Gtk.Grid {
 
         modifier_listbox = new Gtk.ListBox ();
 
-        var add_button = new Gtk.MenuButton ();
-        add_button.valign = Gtk.Align.CENTER;
-        add_button.image = new Gtk.Image.from_icon_name ("list-add-symbolic", Gtk.IconSize.SMALL_TOOLBAR);
-        add_button.tooltip_text = _("Install language");
-        add_button.sensitive = true;
+        var add_button = new Gtk.MenuButton () {
+            valign = Gtk.Align.CENTER,
+            image = new Gtk.Image.from_icon_name ("add", Gtk.IconSize.DND),
+            tooltip_text = _("Add another modifier"),
+            sensitive = true
+        };
+        add_button.get_style_context ().add_class (Gtk.STYLE_CLASS_FLAT);
 
-        var action_bar = new Gtk.ActionBar ();
-        action_bar.margin_top = 12;
+        var action_bar = new Gtk.ActionBar () {
+            margin_top = 12
+        };
         action_bar.get_style_context ().add_class (Gtk.STYLE_CLASS_INLINE_TOOLBAR);
         action_bar.pack_start (add_button);
 
-        modifier_grid = new Gtk.Grid ();
-        modifier_grid.orientation = Gtk.Orientation.VERTICAL;
-        modifier_grid.margin_bottom = 12;
-        modifier_grid.row_spacing = 0;
+        modifier_grid = new Gtk.Grid () {
+            orientation = Gtk.Orientation.VERTICAL,
+            margin_bottom = 12,
+            row_spacing = 0
+        };
         modifier_grid.add (modifiers_label);
         modifier_grid.add (modifier_listbox);
         modifier_grid.add (action_bar);
 
-        var cell = new Gtk.CellRendererText ();
-        cell.ellipsize = Pango.EllipsizeMode.MIDDLE;
-        cell.wrap_mode = Pango.WrapMode.CHAR;
-        cell.width_chars = 64;
+        var cell = new Gtk.CellRendererText () {
+            ellipsize = Pango.EllipsizeMode.MIDDLE,
+            wrap_mode = Pango.WrapMode.CHAR,
+            width_chars = 64
+        };
 
         old_list = new Gtk.ListStore (1, typeof (string));
         old_list.set_default_sort_func (old_list_sorter);
         old_list.set_sort_column_id (Gtk.SortColumn.DEFAULT, Gtk.SortType.ASCENDING);
 
-        old_file_names = new Gtk.TreeView.with_model (old_list);
+        old_file_names = new Gtk.TreeView.with_model (old_list) {
+            hexpand = true,
+            headers_visible = false
+        };
         old_file_names.insert_column_with_attributes (-1, "ORIGINAL", cell, "text", 0);
 
-        old_file_names.hexpand = true;
-        old_file_names.set_headers_visible (false);
+        var original_label = new Granite.HeaderLabel (_("Original Names")) {
+            valign = Gtk.Align.CENTER
+        };
+        original_label.get_style_context ().add_class (Granite.STYLE_CLASS_H2_LABEL);
 
         var old_files_header = new Gtk.Box (Gtk.Orientation.HORIZONTAL, 6);
-        old_files_header.hexpand = true;
-        var original_label = new Granite.HeaderLabel (_("Original Names"));
-        original_label.get_style_context ().add_class (Granite.STYLE_CLASS_H2_LABEL);
-        original_label.valign = Gtk.Align.CENTER;
         old_files_header.add (original_label);
-        sort_by_grid.halign = Gtk.Align.END;
-        sort_by_grid.valign = Gtk.Align.CENTER;
-        sort_type_grid.halign = Gtk.Align.END;
-        sort_type_grid.valign = Gtk.Align.CENTER;
+
         old_files_header.pack_end (sort_type_grid, false, false, 6);
         old_files_header.pack_end (sort_by_grid, false, false, 6);
 
-        var old_scrolled_window = new Gtk.ScrolledWindow (null, null);
-        old_scrolled_window.hexpand = true;
+        var old_scrolled_window = new Gtk.ScrolledWindow (null, null) {
+            hexpand = true,
+            min_content_height = 300,
+            max_content_height = 2000
+        };
+
         old_scrolled_window.add (old_file_names);
-        old_scrolled_window.set_min_content_height (300);
-        old_scrolled_window.set_max_content_height (2000);
+
 
         var vadj = old_scrolled_window.get_vadjustment ();
 
-        var old_files_grid = new Gtk.Grid ();
-        old_files_grid.valign = Gtk.Align.START;
-        old_files_grid.orientation = Gtk.Orientation.VERTICAL;
+        var old_files_grid = new Gtk.Grid () {
+            valign = Gtk.Align.START,
+            orientation = Gtk.Orientation.VERTICAL
+        };
         old_files_grid.add (old_files_header);
         old_files_grid.add (old_scrolled_window);
 
-        var toggle = new Gtk.CellRendererToggle ();
-        toggle.indicator_size = 9;
-        toggle.xalign = 1.0f;
-        var new_cell = new Gtk.CellRendererText ();
-        new_cell.ellipsize = Pango.EllipsizeMode.MIDDLE;
-        new_cell.wrap_mode = Pango.WrapMode.CHAR;
-        new_cell.width_chars = 64;
+        var invalid_renderer = new Gtk.CellRendererPixbuf () {
+            gicon = invalid_icon,
+            visible =false,
+            xalign = 1.0f
+        };
+
+        var new_cell = new Gtk.CellRendererText () {
+            ellipsize = Pango.EllipsizeMode.MIDDLE,
+            wrap_mode = Pango.WrapMode.CHAR,
+            width_chars = 64
+        };
+
         new_list = new Gtk.ListStore (2, typeof (string), typeof (bool));
         new_file_names = new Gtk.TreeView.with_model (new_list);
-        var text_col = new_file_names.insert_column_with_attributes (-1, "NEW", new_cell, "text", 0, "sensitive", 1);
-        new_file_names.insert_column_with_attributes (-1, "VALID", toggle, "active", 1, "visible", 1);
+        var text_col = new Gtk.TreeViewColumn.with_attributes (
+            "NEW", new_cell,
+            "text", 0
+        );
+
+        text_col.set_cell_data_func (new_cell, (col, cell, model, iter) => {
+            bool invalid;
+            model.@get (iter, 1, out invalid);
+            new_cell.sensitive = !invalid;
+        });
+
+        new_file_names.insert_column (text_col, 0);
+
+        new_file_names.insert_column_with_attributes (
+            -1, "VALID", invalid_renderer,
+            "visible", 1
+        );
         new_file_names.headers_visible = false;
 
-        var new_scrolled_window = new Gtk.ScrolledWindow (null, null);
-        new_scrolled_window.hexpand = true;
-        new_scrolled_window.set_policy (Gtk.PolicyType.NEVER, Gtk.PolicyType.EXTERNAL);
-        new_scrolled_window.set_vadjustment (vadj);
+        var new_scrolled_window = new Gtk.ScrolledWindow (null, null) {
+            hexpand = true,
+            vadjustment = vadj,
+            min_content_height = 300,
+            max_content_height = 2000,
+            overlay_scrolling = true
+        };
+
         new_scrolled_window.add (new_file_names);
-        new_scrolled_window.set_min_content_height (300);
-        new_scrolled_window.set_max_content_height (2000);
-        new_scrolled_window.set_overlay_scrolling (true);
+        new_scrolled_window.set_policy (Gtk.PolicyType.NEVER, Gtk.PolicyType.EXTERNAL);
 
         var new_files_header = new Gtk.Box (Gtk.Orientation.HORIZONTAL, 6);
         var new_label = new Granite.HeaderLabel (_("New Names"));
         new_label.get_style_context (). add_class (Granite.STYLE_CLASS_H2_LABEL);
         new_files_header.add (new_label);
 
-        var new_files_grid = new Gtk.Grid ();
-        new_files_grid.valign = Gtk.Align.END;
-        new_files_grid.orientation = Gtk.Orientation.VERTICAL;
+        var new_files_grid = new Gtk.Grid () {
+            valign = Gtk.Align.END,
+            orientation = Gtk.Orientation.VERTICAL
+        };
         new_files_grid.add (new_files_header);
         new_files_grid.add (new_scrolled_window);
 
-        var lists_grid = new Gtk.Grid ();
-        lists_grid.orientation = Gtk.Orientation.HORIZONTAL;
-        lists_grid.column_spacing = 32;
-        lists_grid.column_homogeneous = true;
-        lists_grid.margin = 12;
+        var lists_grid = new Gtk.Grid () {
+            orientation = Gtk.Orientation.HORIZONTAL,
+            column_spacing = 32,
+            column_homogeneous = true,
+            margin = 12
+        };
         lists_grid.add (old_files_grid);
         lists_grid.add (new_files_grid);
 
@@ -236,26 +282,21 @@ public class Renamer : Gtk.Grid {
         sort_by_combo.changed.connect (() => {
             old_list.set_default_sort_func (old_list_sorter);
 
-            update_view ();
+            schedule_view_update ();
         });
 
         sort_type_switch.notify ["active"].connect (() => {
             old_list.set_default_sort_func (old_list_sorter);
-            update_view ();
+            schedule_view_update ();
         });
 
         base_name_combo.changed.connect (() => {
             base_name_entry_revealer.reveal_child = base_name_combo.get_active () == RenameBase.CUSTOM;
-            update_view ();
+            schedule_view_update ();
         });
 
-        base_name_entry.focus_out_event.connect (() => {
-            update_view ();
-            return Gdk.EVENT_PROPAGATE;
-        });
-
-        base_name_entry.activate.connect (() => {
-            update_view ();
+        base_name_entry.changed.connect (() => {
+            schedule_view_update ();
         });
 
         add_button.clicked.connect (() => {
@@ -263,6 +304,8 @@ public class Renamer : Gtk.Grid {
         });
 
         add_modifier (false);
+
+        show_all ();
     }
 
     public void add_files (File[] files) {
@@ -278,7 +321,7 @@ public class Renamer : Gtk.Grid {
                                                      FileAttribute.TIME_CREATED,
                                                      FileAttribute.TIME_MODIFIED);
         Gtk.TreeIter? iter = null;
-        foreach (File f in files) {
+        foreach (unowned File f in files) {
             var path = f.get_path ();
             var dir = Path.get_dirname (path);
             if (dir == directory) {
@@ -300,7 +343,7 @@ public class Renamer : Gtk.Grid {
                         file_info_map.@set (basename, info.dup ());
                         info_map_mutex.@unlock ();
                     } catch (Error e) {
-
+                        warning ("Error querying info %s", e.message);
                     }
                 });
 
@@ -308,22 +351,22 @@ public class Renamer : Gtk.Grid {
         }
 
         old_list.set_default_sort_func (old_list_sorter);
-        update_view ();
+        schedule_view_update ();
     }
 
     public void add_modifier (bool allow_remove) {
         var mod = new Modifier (allow_remove);
         modifier_chain.add (mod);
         modifier_listbox.add (mod);
-        mod.update_request.connect (update_view);
+        mod.update_request.connect (schedule_view_update);
         mod.remove_request.connect (() => {
             modifier_chain.remove (mod);
             mod.destroy ();
             queue_draw ();
-            update_view ();
+            schedule_view_update ();
         });
 
-        update_view ();
+        schedule_view_update ();
     }
 
     public void reset () {
@@ -340,7 +383,7 @@ public class Renamer : Gtk.Grid {
             }
         }
 
-        update_view ();
+        schedule_view_update ();
     }
 
     public void set_sort_order (RenameSortBy sort_by, bool reversed) {
@@ -397,25 +440,26 @@ public class Renamer : Gtk.Grid {
     }
 
     private uint view_update_timeout_id = 0;
-    public void schedule_view_update () {
-        var delay = int.min (number_of_files * modifier_chain.size, 500);
-        if (delay < 20) {
-            update_view ();
-        } else {
-            if (view_update_timeout_id > 0) {
-                Source.remove (view_update_timeout_id);
-            }
-
-            view_update_timeout_id = Timeout.add (delay, () => {
-                update_view ();
-                view_update_timeout_id = 0;
-                return Source.REMOVE;
-            });
+    private void schedule_view_update () {
+        if (view_update_timeout_id > 0) {
+            Source.remove (view_update_timeout_id);
         }
 
+        view_update_timeout_id = Timeout.add (250, () => {
+            if (updating) {
+                return Source.CONTINUE;
+            }
+
+            view_update_timeout_id = 0;
+            update_view ();
+
+            return Source.REMOVE;
+        });
     }
 
+    private bool updating = false;
     private void update_view () {
+        updating = true;
         can_rename = true;
         int index = 0;
         string output_name = "";
@@ -443,24 +487,26 @@ public class Renamer : Gtk.Grid {
             }
 
             var final_name = output_name.concat (extension);
-            bool name_valid = true;
+            bool name_invalid = false;
 
             if (final_name == previous_final_name ||
-                final_name == file_name) {
+                final_name == file_name ||
+                invalid_name (final_name, file_name)) {
 
-                debug ("blank or duplicate name");
-                name_valid = false;
+                debug ("blank or duplicate or existing filename");
+                name_invalid = true;
                 can_rename = false;
-                /* TODO Visual indication of problem output name */
             }
 
             new_list.append (out new_iter);
-            new_list.@set (new_iter, 0, final_name, 1, name_valid, -1);
+            new_list.@set (new_iter, 0, final_name, 1, name_invalid);
 
             previous_final_name = final_name;
             index++;
             return false;
         });
+
+        updating = false;
     }
 
     private string strip_extension (string filename, out string extension) {
@@ -519,6 +565,23 @@ public class Renamer : Gtk.Grid {
         }
 
         return res;
+    }
+
+    private bool invalid_name (string new_name, string input_name) {
+        var old_file = file_map.@get (input_name);
+        if (old_file == null) {
+            return true;
+        }
+
+        var new_file = File.new_for_path (
+            Path.build_filename (old_file.get_parent ().get_path (), new_name)
+        );
+
+        if (new_file.query_exists ()) {
+            return true;
+        }
+
+        return false;
     }
 
     private void replace_files (File[] files) {
