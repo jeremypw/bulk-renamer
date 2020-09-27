@@ -7,13 +7,13 @@ msgid ""
 msgstr ""
 "Project-Id-Version: extra\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-09-27 17:23+0100\n"
+"POT-Creation-Date: 2020-09-27 17:52+0100\n"
 "PO-Revision-Date: 2020-08-02 15:36+0100\n"
 "Last-Translator: Automatically generated\n"
 "Language-Team: none\n"
 "Language: fr\n"
 "MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=ASCII\n"
+"Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
 
@@ -29,17 +29,23 @@ msgstr "Renommez plusieurs fichiers selon une ou plusieurs règles"
 msgid ""
 "Rename multiple files by applying on or more rules to the original name or "
 "to a new basename"
-msgstr "Renommez plusieurs fichiers en appliquant une ou plusieurs règles au nom d'origine ou à un nouveau nom de base"
+msgstr ""
+"Renommez plusieurs fichiers en appliquant une ou plusieurs règles au nom "
+"d'origine ou à un nouveau nom de base"
 
 #: data/io.github.jeremypw.bulk-renamer.appdata.xml.in:12
 msgid ""
 "Add an index number with a chosen starting point and digits as a prefix or "
 "suffix"
-msgstr "Ajouter un numéro d'index avec un point de départ choisi et des chiffres comme préfixe ou suffixe"
+msgstr ""
+"Ajouter un numéro d'index avec un point de départ choisi et des chiffres "
+"comme préfixe ou suffixe"
 
 #: data/io.github.jeremypw.bulk-renamer.appdata.xml.in:13
 msgid "Add a date (current, creation or modification) as a prefix or suffix"
-msgstr "Ajouter une date (actuelle, de création ou de modification) comme préfixe ou suffixe"
+msgstr ""
+"Ajouter une date (actuelle, de création ou de modification) comme préfixe ou "
+"suffixe"
 
 #: data/io.github.jeremypw.bulk-renamer.appdata.xml.in:14
 msgid "Add or replace text"
@@ -51,7 +57,9 @@ msgstr "Un séparateur choisi peut être inséré avec le nouveau texte"
 
 #: data/io.github.jeremypw.bulk-renamer.appdata.xml.in:55
 msgid "Fix validation of desktop and appdata files"
-msgstr "Correction de la validation des fichiers de bureau et de données d'application"
+msgstr ""
+"Correction de la validation des fichiers de bureau et de données "
+"d'application"
 
 #: data/io.github.jeremypw.bulk-renamer.appdata.xml.in:62
 msgid "Initial release"
@@ -59,11 +67,15 @@ msgstr "Première version"
 
 #: data/io.github.jeremypw.bulk-renamer.appdata.xml.in:64
 msgid "Use original name or a new constant name as a basis for renaming"
-msgstr "Utilisez le nom d'origine ou un nouveau nom de constante comme base pour renommer"
+msgstr ""
+"Utilisez le nom d'origine ou un nouveau nom de constante comme base pour "
+"renommer"
 
 #: data/io.github.jeremypw.bulk-renamer.appdata.xml.in:65
 msgid "Add a number sequence, date or text before or after the basename"
-msgstr "Ajouter une séquence de nombres, une date ou un texte avant ou après le nom de base"
+msgstr ""
+"Ajouter une séquence de nombres, une date ou un texte avant ou après le nom "
+"de base"
 
 #: data/io.github.jeremypw.bulk-renamer.appdata.xml.in:66
 msgid "Choose an arbitrary separator for new text"
@@ -83,7 +95,9 @@ msgstr "Voir les résultats avant de renommer"
 
 #: data/io.github.jeremypw.bulk-renamer.appdata.xml.in:70
 msgid "Undo the last rename operation while window is open"
-msgstr "Annuler la dernière opération de changement de nom pendant que la fenêtre est ouverte"
+msgstr ""
+"Annuler la dernière opération de changement de nom pendant que la fenêtre "
+"est ouverte"
 
 #: data/io.github.jeremypw.bulk-renamer.appdata.xml.in:80
 msgid "Main Window"

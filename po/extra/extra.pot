@@ -1,14 +1,14 @@
-# Bulk Renamer App - translations for appdata and schema.
-# Copyright (C) 2019 -2020
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
 # This file is distributed under the same license as the extra package.
-# FIRST AUTHOR <jeremywootten@gmail.com>, 2019.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
 #
 #, fuzzy
 msgid ""
 msgstr ""
 "Project-Id-Version: extra\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-08-02 15:36+0100\n"
+"POT-Creation-Date: 2020-09-27 17:52+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -18,18 +18,17 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 
 #: data/io.github.jeremypw.bulk-renamer.appdata.xml.in:7
-msgid "Bulk Renamer plugin"
+msgid "Bulk Renamer"
 msgstr ""
 
 #: data/io.github.jeremypw.bulk-renamer.appdata.xml.in:8
-msgid ""
-"Plugin for Files to rename multiple files according to one or more rules"
+msgid "Rename multiple files according to one or more rules"
 msgstr ""
 
 #: data/io.github.jeremypw.bulk-renamer.appdata.xml.in:10
 msgid ""
-"Adds menu option to rename selected files by applying on or more rules to "
-"the original name or to a new basename"
+"Rename multiple files by applying on or more rules to the original name or "
+"to a new basename"
 msgstr ""
 
 #: data/io.github.jeremypw.bulk-renamer.appdata.xml.in:12
@@ -47,45 +46,49 @@ msgid "Add or replace text"
 msgstr ""
 
 #: data/io.github.jeremypw.bulk-renamer.appdata.xml.in:16
-msgid "A chosed separator may be inserted together with the new text."
+msgid "A chosen separator may be inserted together with the new text"
 msgstr ""
 
 #: data/io.github.jeremypw.bulk-renamer.appdata.xml.in:55
-msgid "Initial release as Files plugin"
-msgstr ""
-
-#: data/io.github.jeremypw.bulk-renamer.appdata.xml.in:57
-msgid "Use original name or a new constant name as a basis for renaming"
-msgstr ""
-
-#: data/io.github.jeremypw.bulk-renamer.appdata.xml.in:58
-msgid "Add a number sequence, date or text before or after the basename"
-msgstr ""
-
-#: data/io.github.jeremypw.bulk-renamer.appdata.xml.in:59
-msgid "Choose an arbitrary separator for new text"
-msgstr ""
-
-#: data/io.github.jeremypw.bulk-renamer.appdata.xml.in:60
-msgid "Replace a specified part of the name with other text"
-msgstr ""
-
-#: data/io.github.jeremypw.bulk-renamer.appdata.xml.in:61
-msgid "Apply several rules in sequences"
+msgid "Fix validation of desktop and appdata files"
 msgstr ""
 
 #: data/io.github.jeremypw.bulk-renamer.appdata.xml.in:62
+msgid "Initial release"
+msgstr ""
+
+#: data/io.github.jeremypw.bulk-renamer.appdata.xml.in:64
+msgid "Use original name or a new constant name as a basis for renaming"
+msgstr ""
+
+#: data/io.github.jeremypw.bulk-renamer.appdata.xml.in:65
+msgid "Add a number sequence, date or text before or after the basename"
+msgstr ""
+
+#: data/io.github.jeremypw.bulk-renamer.appdata.xml.in:66
+msgid "Choose an arbitrary separator for new text"
+msgstr ""
+
+#: data/io.github.jeremypw.bulk-renamer.appdata.xml.in:67
+msgid "Replace a specified part of the name with other text"
+msgstr ""
+
+#: data/io.github.jeremypw.bulk-renamer.appdata.xml.in:68
+msgid "Apply several rules in sequence"
+msgstr ""
+
+#: data/io.github.jeremypw.bulk-renamer.appdata.xml.in:69
 msgid "See the results before renaming"
 msgstr ""
 
-#: data/io.github.jeremypw.bulk-renamer.appdata.xml.in:63
-msgid "Undo the last rename operation while dialog is open"
+#: data/io.github.jeremypw.bulk-renamer.appdata.xml.in:70
+msgid "Undo the last rename operation while window is open"
 msgstr ""
 
-#: data/io.github.jeremypw.bulk-renamer.appdata.xml.in:73
-msgid "Main Dialog"
+#: data/io.github.jeremypw.bulk-renamer.appdata.xml.in:80
+msgid "Main Window"
 msgstr ""
 
-#: data/io.github.jeremypw.bulk-renamer.appdata.xml.in:78
+#: data/io.github.jeremypw.bulk-renamer.appdata.xml.in:85
 msgid "Jeremy Paul Wootten"
 msgstr ""
