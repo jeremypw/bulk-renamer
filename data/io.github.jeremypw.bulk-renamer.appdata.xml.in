@@ -13,7 +13,7 @@
             <li>Add a date (current, creation or modification) as a prefix or suffix</li>
             <li>Add or replace text</li>
         </ul>
-        <p>A chosed separator may be inserted together with the new text.</p>
+        <p>A chosen separator may be inserted together with the new text</p>
     </description>
     <content_rating type="oars-1.1">
         <content_attribute id="violence-cartoon">none</content_attribute>
@@ -65,7 +65,7 @@
                     <li> Add a number sequence, date or text before or after the basename</li>
                     <li>Choose an arbitrary separator for new text</li>
                     <li>Replace a specified part of the name with other text</li>
-                    <li>Apply several rules in sequences</li>
+                    <li>Apply several rules in sequence</li>
                     <li>See the results before renaming</li>
                     <li>Undo the last rename operation while window is open</li>
                 </ul>

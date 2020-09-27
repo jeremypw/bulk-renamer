@@ -1,4 +1,4 @@
-# ![icon](data/icons/com.github.jeremypw.bulk-renamer-48.svg) Bulk-renamer
+# ![icon](data/icons/io.github.jeremypw.bulk-renamer-48.svg) Bulk-renamer
 [![License: GPL v3](https://img.shields.io/badge/License-GPL%20v3-blue.svg)](http://www.gnu.org/licenses/gpl-3.0)
 
 Bulk file renamer providing a contractor plugin for Pantheon Files, the elementaryos file browser.
@@ -40,7 +40,7 @@ You will now find that the context menu in Pantheon Files shows an extra entry w
 has been selected. Clicking on this option results in the renamer window being launched with the selected files
 appearing in the "Old Name" list.  You can also lauch the renamer from the command line with:
 ```
-com.github.jeremypw.bulk-renamer [OPTIONS] [FILES]
+io.github.jeremypw.bulk-renamer [OPTIONS] [FILES]
 ```
 
 Current options are:

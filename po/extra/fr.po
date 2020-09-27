@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: extra\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-08-02 15:36+0100\n"
+"POT-Creation-Date: 2020-09-27 17:23+0100\n"
 "PO-Revision-Date: 2020-08-02 15:36+0100\n"
 "Last-Translator: Automatically generated\n"
 "Language-Team: none\n"
@@ -18,74 +18,77 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
 
 #: data/io.github.jeremypw.bulk-renamer.appdata.xml.in:7
-msgid "Bulk Renamer plugin"
+msgid "Bulk Renamer"
 msgstr ""
 
 #: data/io.github.jeremypw.bulk-renamer.appdata.xml.in:8
-msgid ""
-"Plugin for Files to rename multiple files according to one or more rules"
-msgstr ""
+msgid "Rename multiple files according to one or more rules"
+msgstr "Renommez plusieurs fichiers selon une ou plusieurs règles"
 
 #: data/io.github.jeremypw.bulk-renamer.appdata.xml.in:10
 msgid ""
-"Adds menu option to rename selected files by applying on or more rules to "
-"the original name or to a new basename"
-msgstr ""
+"Rename multiple files by applying on or more rules to the original name or "
+"to a new basename"
+msgstr "Renommez plusieurs fichiers en appliquant une ou plusieurs règles au nom d'origine ou à un nouveau nom de base"
 
 #: data/io.github.jeremypw.bulk-renamer.appdata.xml.in:12
 msgid ""
 "Add an index number with a chosen starting point and digits as a prefix or "
 "suffix"
-msgstr ""
+msgstr "Ajouter un numéro d'index avec un point de départ choisi et des chiffres comme préfixe ou suffixe"
 
 #: data/io.github.jeremypw.bulk-renamer.appdata.xml.in:13
 msgid "Add a date (current, creation or modification) as a prefix or suffix"
-msgstr ""
+msgstr "Ajouter une date (actuelle, de création ou de modification) comme préfixe ou suffixe"
 
 #: data/io.github.jeremypw.bulk-renamer.appdata.xml.in:14
 msgid "Add or replace text"
-msgstr ""
+msgstr "Ajouter ou remplacer du texte"
 
 #: data/io.github.jeremypw.bulk-renamer.appdata.xml.in:16
-msgid "A chosed separator may be inserted together with the new text."
-msgstr ""
+msgid "A chosen separator may be inserted together with the new text"
+msgstr "Un séparateur choisi peut être inséré avec le nouveau texte"
 
 #: data/io.github.jeremypw.bulk-renamer.appdata.xml.in:55
-msgid "Initial release as Files plugin"
-msgstr ""
-
-#: data/io.github.jeremypw.bulk-renamer.appdata.xml.in:57
-msgid "Use original name or a new constant name as a basis for renaming"
-msgstr ""
-
-#: data/io.github.jeremypw.bulk-renamer.appdata.xml.in:58
-msgid "Add a number sequence, date or text before or after the basename"
-msgstr ""
-
-#: data/io.github.jeremypw.bulk-renamer.appdata.xml.in:59
-msgid "Choose an arbitrary separator for new text"
-msgstr ""
-
-#: data/io.github.jeremypw.bulk-renamer.appdata.xml.in:60
-msgid "Replace a specified part of the name with other text"
-msgstr ""
-
-#: data/io.github.jeremypw.bulk-renamer.appdata.xml.in:61
-msgid "Apply several rules in sequences"
-msgstr ""
+msgid "Fix validation of desktop and appdata files"
+msgstr "Correction de la validation des fichiers de bureau et de données d'application"
 
 #: data/io.github.jeremypw.bulk-renamer.appdata.xml.in:62
+msgid "Initial release"
+msgstr "Première version"
+
+#: data/io.github.jeremypw.bulk-renamer.appdata.xml.in:64
+msgid "Use original name or a new constant name as a basis for renaming"
+msgstr "Utilisez le nom d'origine ou un nouveau nom de constante comme base pour renommer"
+
+#: data/io.github.jeremypw.bulk-renamer.appdata.xml.in:65
+msgid "Add a number sequence, date or text before or after the basename"
+msgstr "Ajouter une séquence de nombres, une date ou un texte avant ou après le nom de base"
+
+#: data/io.github.jeremypw.bulk-renamer.appdata.xml.in:66
+msgid "Choose an arbitrary separator for new text"
+msgstr "Choisissez un séparateur arbitraire pour le nouveau texte"
+
+#: data/io.github.jeremypw.bulk-renamer.appdata.xml.in:67
+msgid "Replace a specified part of the name with other text"
+msgstr "Remplacer une partie spécifiée du nom par un autre texte"
+
+#: data/io.github.jeremypw.bulk-renamer.appdata.xml.in:68
+msgid "Apply several rules in sequence"
+msgstr "Appliquer plusieurs règles en séquence"
+
+#: data/io.github.jeremypw.bulk-renamer.appdata.xml.in:69
 msgid "See the results before renaming"
-msgstr ""
+msgstr "Voir les résultats avant de renommer"
 
-#: data/io.github.jeremypw.bulk-renamer.appdata.xml.in:63
-msgid "Undo the last rename operation while dialog is open"
-msgstr ""
+#: data/io.github.jeremypw.bulk-renamer.appdata.xml.in:70
+msgid "Undo the last rename operation while window is open"
+msgstr "Annuler la dernière opération de changement de nom pendant que la fenêtre est ouverte"
 
-#: data/io.github.jeremypw.bulk-renamer.appdata.xml.in:73
-msgid "Main Dialog"
-msgstr ""
+#: data/io.github.jeremypw.bulk-renamer.appdata.xml.in:80
+msgid "Main Window"
+msgstr "Fenêtre principale"
 
-#: data/io.github.jeremypw.bulk-renamer.appdata.xml.in:78
+#: data/io.github.jeremypw.bulk-renamer.appdata.xml.in:85
 msgid "Jeremy Paul Wootten"
 msgstr ""
