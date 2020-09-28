@@ -74,8 +74,9 @@ public class Renamer : Gtk.Grid {
         base_name_combo = new Gtk.ComboBoxText () {
             valign = Gtk.Align.CENTER
         };
-        base_name_combo.insert (RenameBase.ORIGINAL, "ORIGINAL", RenameBase.ORIGINAL.to_string ());
+
         base_name_combo.insert (RenameBase.CUSTOM, "CUSTOM", RenameBase.CUSTOM.to_string ());
+        base_name_combo.insert (RenameBase.ORIGINAL, "ORIGINAL", RenameBase.ORIGINAL.to_string ());
 
         base_name_entry = new Gtk.Entry () {
             placeholder_text = _("Enter naming scheme"),
