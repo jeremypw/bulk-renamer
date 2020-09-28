@@ -185,11 +185,21 @@ public class Renamer : Gtk.Grid {
         };
         original_label.get_style_context ().add_class (Granite.STYLE_CLASS_H2_LABEL);
 
+        var clear_button = new Gtk.Button.from_icon_name ("edit-clear-all", Gtk.IconSize.LARGE_TOOLBAR);
+        clear_button.action_name = "win.action-clear-files";
+        clear_button.tooltip_markup = Granite.markup_accel_tooltip (
+            ((Gtk.Application)Application.get_default ()).get_accels_for_action (clear_button.action_name),
+            _("Clear the original file list")
+        );
+        clear_button.get_style_context ().add_class (Gtk.STYLE_CLASS_FLAT);
+
         var old_files_header = new Gtk.Box (Gtk.Orientation.HORIZONTAL, 6);
         old_files_header.add (original_label);
 
+        old_files_header.pack_end (clear_button, false, false, 6);
         old_files_header.pack_end (sort_type_grid, false, false, 6);
         old_files_header.pack_end (sort_by_grid, false, false, 6);
+
 
         var header_size_group = new Gtk.SizeGroup (Gtk.SizeGroupMode.VERTICAL);
         header_size_group.add_widget (old_files_header);
@@ -593,13 +603,16 @@ public class Renamer : Gtk.Grid {
     }
 
     private void replace_files (File[] files) {
+        clear_files ();
+        add_files (files);
+    }
+
+    public void clear_files () {
         old_list.clear ();
         new_list.clear ();
         number_of_files = 0;
         file_map.clear ();
         file_info_map.clear ();
-
-        add_files (files);
     }
 
     public void undo () {

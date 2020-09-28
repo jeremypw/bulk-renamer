@@ -25,17 +25,20 @@ public class BulkRenamer.Window : Gtk.ApplicationWindow {
     private Renamer renamer;
     public SimpleActionGroup actions { get; construct; }
     public const string ACTION_PREFIX = "win.";
-    public const string ACTION_OPEN = "action_open";
-    public const string ACTION_UNDO = "action_undo";
+    public const string ACTION_OPEN = "action-open";
+    public const string ACTION_UNDO = "action-undo";
+    public const string ACTION_CLEAR_FILES = "action-clear-files";
     private const ActionEntry[] ACTION_ENTRIES = {
         { ACTION_OPEN, action_open },
-        { ACTION_UNDO, action_undo }
+        { ACTION_UNDO, action_undo },
+        { ACTION_CLEAR_FILES, action_clear_files }
     };
 
     public static Gee.MultiMap<string, string> action_accelerators = new Gee.HashMultiMap<string, string> ();
     static construct {
         action_accelerators.set (ACTION_OPEN, "<Control>o");
         action_accelerators.set (ACTION_UNDO, "<Control>z");
+        action_accelerators.set (ACTION_CLEAR_FILES, "<Control>Delete");
     }
 
     public Window (Gtk.Application app) {
@@ -74,6 +77,7 @@ public class BulkRenamer.Window : Gtk.ApplicationWindow {
             application.get_accels_for_action (open_button.action_name),
             _("Select files to rename")
         );
+        open_button.get_style_context ().add_class (Gtk.STYLE_CLASS_FLAT);
 
         header_bar.pack_start (open_button);
 
@@ -180,5 +184,9 @@ public class BulkRenamer.Window : Gtk.ApplicationWindow {
 
     private void action_undo () {
 
+    }
+
+    private void action_clear_files () {
+        renamer.clear_files ();
     }
 }
