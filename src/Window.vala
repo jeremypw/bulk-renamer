@@ -1,6 +1,6 @@
 /*
  * Copyright (C) 2010-2017  Vartan Belavejian
- * Copyright (C) 2019      Jeremy Wootten
+ * Copyright (C) 2019-2020  Jeremy Wootten
  *
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -23,6 +23,20 @@
 
 public class BulkRenamer.Window : Gtk.ApplicationWindow {
     private Renamer renamer;
+    public SimpleActionGroup actions { get; construct; }
+    public const string ACTION_PREFIX = "win.";
+    public const string ACTION_OPEN = "action_open";
+    public const string ACTION_UNDO = "action_undo";
+    private const ActionEntry[] ACTION_ENTRIES = {
+        { ACTION_OPEN, action_open },
+        { ACTION_UNDO, action_undo }
+    };
+
+    public static Gee.MultiMap<string, string> action_accelerators = new Gee.HashMultiMap<string, string> ();
+    static construct {
+        action_accelerators.set (ACTION_OPEN, "<Control>o");
+        action_accelerators.set (ACTION_UNDO, "<Control>z");
+    }
 
     public Window (Gtk.Application app) {
         Object (
@@ -31,16 +45,37 @@ public class BulkRenamer.Window : Gtk.ApplicationWindow {
     }
 
     construct {
+        actions = new SimpleActionGroup ();
+        actions.add_action_entries (ACTION_ENTRIES, this);
+        insert_action_group ("win", actions);
+
+        foreach (var action in action_accelerators.get_keys ()) {
+            var accels_array = action_accelerators[action].to_array ();
+            accels_array += null;
+
+            ((Gtk.Application)Application.get_default ()).set_accels_for_action (ACTION_PREFIX + action, accels_array);
+        }
+
         title = _("Bulk Renamer");
         set_default_size (600, 400);
 
         renamer = new Renamer ();
         renamer.margin = 12;
 
-        var header_bar = new Gtk.HeaderBar ();
-        header_bar.set_title (_("Bulk Renamer"));
-        header_bar.show_close_button = true;
-        header_bar.has_subtitle = false;
+        var header_bar = new Gtk.HeaderBar () {
+            title = _("Bulk Renamer"),
+            show_close_button = true,
+            has_subtitle = false
+        };
+
+        var open_button = new Gtk.Button.from_icon_name ("document-open", Gtk.IconSize.LARGE_TOOLBAR);
+        open_button.action_name = ACTION_PREFIX + ACTION_OPEN;
+        open_button.tooltip_markup = Granite.markup_accel_tooltip (
+            application.get_accels_for_action (open_button.action_name),
+            _("Select files to rename")
+        );
+
+        header_bar.pack_start (open_button);
 
         set_titlebar (header_bar);
 
@@ -116,5 +151,34 @@ public class BulkRenamer.Window : Gtk.ApplicationWindow {
 
     public void set_files (File[] files) {
         renamer.add_files (files);
+    }
+
+    private void action_open () {
+        var filechooser = new Gtk.FileChooserNative (
+            "Select files to rename",  this, Gtk.FileChooserAction.OPEN, _("Select"), _("Cancel")
+        ) {
+            select_multiple = true,
+            modal = true
+        };
+
+        var response = filechooser.run ();
+        if (response == Gtk.ResponseType.ACCEPT) {
+
+        }
+
+        var selected_files_list = filechooser.get_files ();
+        var selected_files_array = new File[selected_files_list.length ()];
+        int index = 0;
+        selected_files_list.@foreach ((file) => {
+            selected_files_array[index++] = file.dup ();
+        });
+
+        set_files (selected_files_array);
+
+        filechooser.destroy ();
+    }
+
+    private void action_undo () {
+
     }
 }
