@@ -204,14 +204,12 @@ public class Renamer : Gtk.Grid {
         var header_size_group = new Gtk.SizeGroup (Gtk.SizeGroupMode.VERTICAL);
         header_size_group.add_widget (old_files_header);
 
-        var old_scrolled_window = new Gtk.ScrolledWindow (null, null) {
-            hexpand = true,
-            min_content_height = 300,
-            max_content_height = 2000
-        };
+        var old_scrolled_window = new OldFilesList ();
+        old_scrolled_window.files_dropped.connect ((file_array) => {
+            add_files (file_array);
+        });
 
         old_scrolled_window.add (old_file_names);
-
 
         var vadj = old_scrolled_window.get_vadjustment ();
 
@@ -645,5 +643,94 @@ public class Renamer : Gtk.Grid {
         });
 
         replace_files (new_files);
+    }
+
+    private class OldFilesList : Gtk.ScrolledWindow {
+        /** Drag and drop support **/
+        protected const Gdk.DragAction FILE_DRAG_ACTIONS = Gdk.DragAction.COPY;
+
+        private bool drop_data_ready = false; /* whether the drop data was received already */
+        private bool drop_occurred = false; /* whether the data was dropped */
+        private File[] drop_file_array = null; /* the list of URIs in the drop data */
+        Gdk.DragAction current_suggested_action = 0; /* No action */
+        Gdk.DragAction current_actions = 0; /* No action */
+
+        public signal void files_dropped (File[] dropped_files);
+
+        public OldFilesList () {
+            /* Drag destination */
+            Gtk.TargetEntry target_uri_list = {"text/uri-list", 0, 0};
+            Gtk.drag_dest_set (this, Gtk.DestDefaults.MOTION,
+                               {target_uri_list},
+                               FILE_DRAG_ACTIONS);
+
+            drag_data_received.connect (on_drag_data_received);
+            drag_drop.connect (on_drag_drop);
+        }
+
+        construct {
+            hexpand = true;
+            min_content_height = 300;
+            max_content_height = 2000;
+        }
+
+        private void on_drag_data_received (Gdk.DragContext context,
+                                            int x, int y,
+                                            Gtk.SelectionData selection_data,
+                                            uint info, uint time) {
+            bool success = false;
+
+            if (!drop_data_ready) {
+                string? uris;
+                if (selection_data_is_uri_list (selection_data, info, out uris)) {
+                    var uri_list = GLib.Uri.list_extract_uris (uris);
+                    drop_file_array = new File[uri_list.length];
+                    int index = 0;
+                    foreach (unowned string uri in uri_list) {
+                        drop_file_array[index++] = GLib.File.new_for_uri (uri);
+                    }
+
+                    drop_data_ready = true;
+                }
+            }
+
+            if (drop_data_ready && drop_occurred && info == 0) {
+                drop_occurred = false;
+                files_dropped (drop_file_array);
+                Gtk.drag_finish (context, success, false, time);
+            }
+        }
+
+        private bool on_drag_drop (Gdk.DragContext context, int x, int y, uint time) {
+            drop_occurred = true;
+            if (drop_file_array == null) {
+                Gtk.TargetList list = null;
+                Gdk.Atom target = Gtk.drag_dest_find_target (this, context, list);
+                Gtk.drag_get_data (this, context, target, time);
+            }
+
+            return false;
+        }
+
+        private bool selection_data_is_uri_list (Gtk.SelectionData selection_data, uint info, out string? text) {
+            text = null;
+
+            if (info == 0 &&
+                selection_data != null &&
+                selection_data.get_length () > 0 && //No other way to get length?
+                selection_data.get_format () == 8) {
+
+                /* selection_data.get_data () does not work for some reason (returns nothing) */
+                var sb = new StringBuilder ("");
+
+                foreach (uchar u in selection_data.get_data_with_length ()) {
+                    sb.append_c ((char)u);
+                }
+
+                text = sb.str;
+            }
+
+            return (text != null);
+        }
     }
 }
