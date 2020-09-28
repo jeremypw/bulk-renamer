@@ -191,6 +191,9 @@ public class Renamer : Gtk.Grid {
         old_files_header.pack_end (sort_type_grid, false, false, 6);
         old_files_header.pack_end (sort_by_grid, false, false, 6);
 
+        var header_size_group = new Gtk.SizeGroup (Gtk.SizeGroupMode.VERTICAL);
+        header_size_group.add_widget (old_files_header);
+
         var old_scrolled_window = new Gtk.ScrolledWindow (null, null) {
             hexpand = true,
             min_content_height = 300,
@@ -254,7 +257,11 @@ public class Renamer : Gtk.Grid {
         new_scrolled_window.set_policy (Gtk.PolicyType.NEVER, Gtk.PolicyType.EXTERNAL);
 
         var new_files_header = new Gtk.Box (Gtk.Orientation.HORIZONTAL, 6);
-        var new_label = new Granite.HeaderLabel (_("New Names"));
+        header_size_group.add_widget (new_files_header);
+
+        var new_label = new Granite.HeaderLabel (_("New Names")) {
+            valign = Gtk.Align.CENTER
+        };
         new_label.get_style_context (). add_class (Granite.STYLE_CLASS_H2_LABEL);
         new_files_header.add (new_label);
 
