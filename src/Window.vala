@@ -35,7 +35,10 @@ public class BulkRenamer.Window : Gtk.ApplicationWindow {
     };
 
     public static Gee.MultiMap<string, string> action_accelerators = new Gee.HashMultiMap<string, string> ();
+    private static Settings app_settings;
+
     static construct {
+        app_settings = new Settings ("io.github.jeremypw.bulk-renamer");
         action_accelerators.set (ACTION_OPEN, "<Control>o");
         action_accelerators.set (ACTION_UNDO, "<Control>z");
         action_accelerators.set (ACTION_CLEAR_FILES, "<Control>Delete");
@@ -135,21 +138,69 @@ public class BulkRenamer.Window : Gtk.ApplicationWindow {
         });
 
         cancel_button.clicked.connect (() => {
-            destroy ();
+            quit ();
         });
 
         undo_button.clicked.connect (() => {
             renamer.undo ();
         });
 
-        renamer.set_base_name (BulkRenamer.App.base_name);
+        if (BulkRenamer.App.restore) {
+            renamer.set_base_type (app_settings.get_int ("base-type"));
+            renamer.set_base_name (app_settings.get_string ("custom-base"));
 
-        if (BulkRenamer.App.sort_by_created) {
-            renamer.set_sort_order (RenameSortBy.CREATED, BulkRenamer.App.sort_reversed);
-        } else if (BulkRenamer.App.sort_by_modified) {
-            renamer.set_sort_order (RenameSortBy.MODIFIED, BulkRenamer.App.sort_reversed);
+            /* Restore modifiers */
+            Variant mod_vars = app_settings.get_value ("modifier-list"); // Type "av"
+            var iter = new VariantIter (mod_vars);
+
+            Variant mod_var;
+
+            int count = 0;
+            while (iter.next ("v", out mod_var)) {
+                if (count == 0) {
+                    renamer.modifier_chain[0].set_from_variant (mod_var);
+                } else {
+                    renamer.add_modifier (true).set_from_variant (mod_var);
+                }
+
+                count++;
+            }
+
+            warning ("%i modifiers restored", count);
+
+            var sort = (RenameSortBy)(app_settings.get_enum ("sort-by"));
+            var reversed = app_settings.get_boolean ("reversed");
+
+            renamer.set_sort_order (sort, reversed);
         } else {
-            renamer.set_sort_order (RenameSortBy.NAME, BulkRenamer.App.sort_reversed);
+            if (BulkRenamer.App.base_name != "") {
+                renamer.set_base_name (BulkRenamer.App.base_name);
+            }
+
+            if (BulkRenamer.App.sort_by_created) {
+                renamer.set_sort_order (RenameSortBy.CREATED, BulkRenamer.App.sort_reversed);
+            } else if (BulkRenamer.App.sort_by_modified) {
+                renamer.set_sort_order (RenameSortBy.MODIFIED, BulkRenamer.App.sort_reversed);
+            } else {
+                renamer.set_sort_order (RenameSortBy.NAME, BulkRenamer.App.sort_reversed);
+            }
+        }
+
+        var state = app_settings.get_enum ("window-state");
+
+        switch (state) {
+            case 1:
+                maximize ();
+                break;
+            default:
+                int default_x, default_y;
+                app_settings.get ("window-position", "(ii)", out default_x, out default_y);
+
+                if (default_x != -1 && default_y != -1) {
+                    move (default_x, default_y);
+                }
+
+                break;
         }
     }
 
@@ -188,5 +239,38 @@ public class BulkRenamer.Window : Gtk.ApplicationWindow {
 
     private void action_clear_files () {
         renamer.clear_files ();
+    }
+
+    public void quit () {
+        /* Save window state */
+        var state = get_window ().get_state ();
+        if (Gdk.WindowState.MAXIMIZED in state) {
+            app_settings.set_enum ("window-state", 1);
+        } else {
+            app_settings.set_enum ("window-state", 0);
+        }
+
+        // Save window position
+        int x, y;
+        get_position (out x, out y);
+        app_settings.set ("window-position", "(ii)", x, y);
+
+        /* Save basename */
+        app_settings.set_enum ("base-type", renamer.get_base_type ());
+        app_settings.set_string ("custom-base", renamer.get_custom_base_name ());
+
+        /* Save modifier settings */
+        var vb = new VariantBuilder (new VariantType ("av"));
+        foreach (var modifier in renamer.modifier_chain) {
+            vb.add ("v", modifier.to_variant ());
+        }
+
+        app_settings.set_value ("modifier-list", vb.end ());
+
+        /* Save sort type */
+        app_settings.set_enum ("sort-by", renamer.get_sort_type ());
+        app_settings.set_boolean ("reversed", renamer.get_reverse_sort ());
+
+        destroy ();
     }
 }

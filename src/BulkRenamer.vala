@@ -24,7 +24,7 @@
 public class Renamer : Gtk.Grid {
     private Gee.HashMap<string, File> file_map;
     private Gee.HashMap<string, FileInfo> file_info_map;
-    private Gee.ArrayList<Modifier> modifier_chain;
+    public Gee.ArrayList<Modifier> modifier_chain { get; private set; }
     private Gee.LinkedList<Gee.HashMap<string, string>> undo_stack;
 
     private Gtk.Grid modifier_grid;
@@ -370,7 +370,7 @@ public class Renamer : Gtk.Grid {
         schedule_view_update ();
     }
 
-    public void add_modifier (bool allow_remove) {
+    public Modifier add_modifier (bool allow_remove) {
         var mod = new Modifier (allow_remove);
         modifier_chain.add (mod);
         modifier_listbox.add (mod);
@@ -383,6 +383,8 @@ public class Renamer : Gtk.Grid {
         });
 
         schedule_view_update ();
+
+        return mod;
     }
 
     public void reset () {
@@ -645,6 +647,30 @@ public class Renamer : Gtk.Grid {
         replace_files (new_files);
     }
 
+    public int get_base_type () {
+        return base_name_combo.active;
+    }
+
+    public void set_base_type (int type) {
+        base_name_combo.active = type;
+    }
+
+    public string get_custom_base_name () {
+        return base_name_combo.active == RenameBase.CUSTOM ? base_name_entry.text : "";
+    }
+
+    public void set_custom_base_name (string base_name) {
+        base_name_entry.text = base_name;
+    }
+
+    public int get_sort_type () {
+        return sort_by_combo.active;
+    }
+
+    public bool get_reverse_sort () {
+        return sort_type_switch.active;
+    }
+
     private class OldFilesList : Gtk.ScrolledWindow {
         /** Drag and drop support **/
         protected const Gdk.DragAction FILE_DRAG_ACTIONS = Gdk.DragAction.COPY;
@@ -652,8 +678,6 @@ public class Renamer : Gtk.Grid {
         private bool drop_data_ready = false; /* whether the drop data was received already */
         private bool drop_occurred = false; /* whether the data was dropped */
         private File[] drop_file_array = null; /* the list of URIs in the drop data */
-        Gdk.DragAction current_suggested_action = 0; /* No action */
-        Gdk.DragAction current_actions = 0; /* No action */
 
         public signal void files_dropped (File[] dropped_files);
 

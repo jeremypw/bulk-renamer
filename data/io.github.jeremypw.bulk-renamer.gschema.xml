@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<schemalist>
+  <enum id="io.github.jeremypw.bulk-renamer.windowstate">
+    <value value="0" nick="normal"/>
+    <value value="1" nick="maximized"/>
+  </enum>
+  <enum id="io.github.jeremypw.bulk-renamer.basetype">
+    <value value="0" nick="original"/>
+    <value value="1" nick="custom"/>
+  </enum>
+  <enum id="io.github.jeremypw.bulk-renamer.sortby">
+    <value value="0" nick="name"/>
+    <value value="1" nick="creation"/>
+    <value value="2" nick="modification"/>
+  </enum>
+
+  <schema path="/io/github/jeremypw/bulk-renamer/" id="io.github.jeremypw.bulk-renamer">
+    <key name="window-position" type="(ii)">
+      <default>(-1, -1)</default>
+      <summary>Window position</summary>
+      <description>Most recent window position (x, y)</description>
+    </key>
+    <key name="window-state" enum="io.github.jeremypw.bulk-renamer.windowstate">
+      <default>'normal'</default>
+      <summary>Window state</summary>
+      <description>State of last closed window (normal or maximized).</description>
+    </key>
+    <key name="base-type" enum="io.github.jeremypw.bulk-renamer.basetype">
+      <default>'original'</default>
+      <summary>What to use as base name</summary>
+      <description>Whether to use the original name as a starting point, or a fixed custom name</description>
+    </key>
+    <key type = "s" name="custom-base">
+      <default>''</default>
+      <summary>Custom base name</summary>
+      <description>Name to use as a starting point</description>
+    </key>
+    <key name="sort-by" enum="io.github.jeremypw.bulk-renamer.sortby">
+      <default>'name'</default>
+      <summary>Type of input sort</summary>
+      <description>How to sort input files before renaming</description>
+    </key>
+    <key type = "b" name="reversed">
+      <default>false</default>
+      <summary>Whether input sort reversed</summary>
+      <description>Whether input files are sorted in reverse order before renaming</description>
+    </key>
+    <key type="av" name="modifier-list">
+      <summary>Details of modifiers</summary>
+      <default>[]</default>
+      <summary>Array of modifier specifications</summary>
+      <description>Array of modifier specifications</description>
+    </key>
+  </schema>
+</schemalist>

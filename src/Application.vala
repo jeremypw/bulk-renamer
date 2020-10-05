@@ -38,6 +38,7 @@ public class BulkRenamer.App : Gtk.Application {
     public static bool sort_by_modified = false;
     public static bool sort_reversed = false;
     public static string[] file_names = {};
+    public static bool restore = true;
 
     private BulkRenamer.Window? main_window;
 
@@ -62,7 +63,7 @@ It is possible to undo the last renaming while the window is open.
         var quit_action = new SimpleAction ("quit", null);
         quit_action.activate.connect (() => {
             if (main_window != null) {
-                main_window.destroy ();
+                main_window.quit ();
             }
         });
 
@@ -80,6 +81,14 @@ It is possible to undo the last renaming while the window is open.
     }
 
     public override void activate () {
+        /* Command line options used do not restore settings */
+        App.restore = !(
+            base_name != null ||
+            sort_by_created ||
+            sort_by_modified ||
+            sort_reversed
+        );
+
         if (main_window == null) {
             main_window = new BulkRenamer.Window (this);
 

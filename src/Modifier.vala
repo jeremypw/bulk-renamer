@@ -166,9 +166,9 @@ public class Modifier : Gtk.ListBoxRow {
         position_stack.add_named (search_entry, "TARGET");
 
         position_combo = new Gtk.ComboBoxText ();
-        position_combo.insert (RenamePosition.SUFFIX, "NUMBER", RenamePosition.SUFFIX.to_string ());
-        position_combo.insert (RenamePosition.PREFIX, "TEXT", RenamePosition.PREFIX.to_string ());
-        position_combo.insert (RenamePosition.REPLACE, "DATETIME", RenamePosition.REPLACE.to_string ());
+        position_combo.insert (RenamePosition.SUFFIX, "SUFFIX", RenamePosition.SUFFIX.to_string ());
+        position_combo.insert (RenamePosition.PREFIX, "PREFIX", RenamePosition.PREFIX.to_string ());
+        position_combo.insert (RenamePosition.REPLACE, "REPLACE", RenamePosition.REPLACE.to_string ());
         position_combo.active = RenamePosition.SUFFIX;
 
         var remove_button = new Gtk.Button.from_icon_name ("process-stop", Gtk.IconSize.LARGE_TOOLBAR) {
@@ -358,5 +358,101 @@ public class Modifier : Gtk.ListBoxRow {
             default:
                 assert_not_reached ();
         }
+    }
+
+    private const string variant_type_s = "((is)is(ii)(ix)s)";
+    public Variant to_variant () {
+        assert (VariantType.string_is_valid (variant_type_s));
+        VariantBuilder vb = new VariantBuilder (new VariantType (variant_type_s));
+
+        //Suffix/Prefix/Replace (string) combo - enum - type "(is)"
+        vb.open (new VariantType ("(is)"));
+        vb.add ("i", position_combo.active);
+        vb.add ("s", position_combo.active == RenamePosition.REPLACE ? search_entry.text : "");
+        vb.close ();
+
+        //Text/Number Sequence/Date combo - enum - type "i"
+        vb.add ("i", mode_combo.active);
+
+        //Textsource - string - type "s"
+        vb.add ("s", mode_combo.active == RenameMode.TEXT ? text_entry.text : "");
+
+        //NumberSequence start/digits uint/uint - type "(ii)"
+        vb.open (new VariantType ("(ii)"));
+        if (mode_combo.active == RenameMode.NUMBER) {
+            vb.add ("i", (int)(start_number_spin_button.@value));
+            vb.add ("i", (int)(digits_spin_button.@value));
+        } else {
+            vb.add ("i", 0);
+            vb.add ("i", 0);
+        }
+
+        vb.close ();
+
+        //DateSequence format/startdatetime enum/int64 - "(ix)"
+        vb.open (new VariantType ("(ix)"));
+        if (mode_combo.active == RenameMode.DATETIME) {
+            vb.add ("i", date_format_combo.active);
+            DateTime date = date_picker.date;
+            DateTime time = time_picker.time;
+            DateTime start_datetime = new DateTime (
+                new TimeZone.local (),
+                date.get_year (),
+                date.get_month (),
+                date.get_day_of_month (),
+                time.get_hour (),
+                time.get_minute (),
+                time.get_seconds ()
+            );
+
+            vb.add ("x", start_datetime.to_unix ());
+
+        } else {
+            vb.add ("i", 0);
+            vb.add ("x", 0);
+        }
+
+        vb.close ();
+
+        //Separator string - type "s"
+        vb.add ("s", separator_entry.text);
+
+        return vb.end ();
+    }
+
+    public void set_from_variant (Variant settings) {
+        var iter = new VariantIter (settings);
+        //Suffix/Prefix/Replace (string) combo - enum - type "(is)"
+        int active;
+        string text;
+        iter.next ("(is)", out active, out text);
+        position_combo.active = active;
+        search_entry.text = text;
+
+        //Text/Number Sequence/Date combo - enum - type "i"
+        iter.next ("i", out active);
+        mode_combo.active = active;
+
+        //Textsource - string - type "s"
+        iter.next ("s", out text);
+        text_entry.text = text;
+
+        //NumberSequence start/digits uint/uint - type "(ii)"
+        int start, digits;
+        iter.next ("(ii)", out start, out digits);
+        start_number_spin_button.@value = (double)start;
+        digits_spin_button.@value = (double)digits;
+
+        //DateSequence format/startdatetime enum/int64 - "(ix)"
+        int64 start_unix;
+        iter.next ("(ix)", out active, out start_unix);
+        date_format_combo.active = active;
+        DateTime start_datetime = new DateTime.from_unix_local (start_unix);
+        date_picker.date = start_datetime;
+        time_picker.time = start_datetime;
+
+        //Separator string - type "s"
+        iter.next ("s", out text);
+        separator_entry.text = text;
     }
 }

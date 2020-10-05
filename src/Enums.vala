@@ -127,6 +127,7 @@ public enum RenameDateFormat {
     }
 }
 
+//TODO Use this?
 public enum RenameDateType {
     NOW,
     CHOOSE;
