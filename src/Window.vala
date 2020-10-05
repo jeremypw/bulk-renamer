@@ -141,6 +141,10 @@ public class BulkRenamer.Window : Gtk.ApplicationWindow {
             quit ();
         });
 
+        delete_event.connect (() => {
+            quit ();
+        });
+
         undo_button.clicked.connect (() => {
             renamer.undo ();
         });
@@ -210,7 +214,7 @@ public class BulkRenamer.Window : Gtk.ApplicationWindow {
 
     private void action_open () {
         var filechooser = new Gtk.FileChooserNative (
-            "Select files to rename",  this, Gtk.FileChooserAction.OPEN, _("Select"), _("Cancel")
+            "Select files to rename", this, Gtk.FileChooserAction.OPEN, _("Select"), _("Cancel")
         ) {
             select_multiple = true,
             modal = true

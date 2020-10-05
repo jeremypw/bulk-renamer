@@ -360,10 +360,8 @@ public class Modifier : Gtk.ListBoxRow {
         }
     }
 
-    private const string variant_type_s = "((is)is(ii)(ix)s)";
     public Variant to_variant () {
-        assert (VariantType.string_is_valid (variant_type_s));
-        VariantBuilder vb = new VariantBuilder (new VariantType (variant_type_s));
+        VariantBuilder vb = new VariantBuilder (new VariantType ("((is)is(ii)(ix)s)"));
 
         //Suffix/Prefix/Replace (string) combo - enum - type "(is)"
         vb.open (new VariantType ("(is)"));
