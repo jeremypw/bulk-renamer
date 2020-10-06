@@ -38,6 +38,7 @@ public class Renamer : Gtk.Grid {
 
     private Gtk.Entry base_name_entry;
     private Gtk.ComboBoxText base_name_combo;
+    private Gtk.Switch protect_extension_switch;
     private Gtk.Switch sort_type_switch;
     private Gtk.ComboBoxText sort_by_combo;
 
@@ -85,30 +86,28 @@ public class Renamer : Gtk.Grid {
             valign = Gtk.Align.CENTER
         };
 
-        var base_name_entry_revealer = new Gtk.Revealer () {
-            vexpand = false
+        var protect_extension_label = new Gtk.Label (_("Protect Extension")) {
+            vexpand = true,
+            valign = Gtk.Align.CENTER
         };
-        base_name_entry_revealer.add (base_name_entry);
+
+        protect_extension_switch = new Gtk.Switch () {
+            vexpand = false,
+            valign = Gtk.Align.CENTER,
+            active = true
+        };
 
         var protect_extension_grid = new Gtk.Grid () {
             column_spacing = 6,
             tooltip_text = _("Do not apply changes to file extension")
         };
 
-        var protect_extension_label = new Gtk.Label (_("Protect Extension")) {
-            hexpand = true,
-            halign = Gtk.Align.END
-        };
-
-        var protect_extension_switch = new Gtk.Switch () {
-            halign = Gtk.Align.START,
-            vexpand = false,
-            valign = Gtk.Align.CENTER,
-            active = true
-        };
-
         protect_extension_grid.attach (protect_extension_label, 0, 0, 1, 1);
         protect_extension_grid.attach (protect_extension_switch, 1, 0, 1, 1);
+
+        var controls_stack = new Gtk.Stack ();
+        controls_stack.add (base_name_entry);
+        controls_stack.add (protect_extension_grid);
 
         var controls_grid = new Gtk.Grid () {
             orientation = Gtk.Orientation.HORIZONTAL,
@@ -118,8 +117,7 @@ public class Renamer : Gtk.Grid {
 
         controls_grid.attach (base_name_label, 0, 0, 2, 1);
         controls_grid.attach (base_name_combo, 0, 1, 1, 1);
-        controls_grid.attach (base_name_entry_revealer, 1, 1, 1, 1);
-        controls_grid.attach (protect_extension_grid, 2, 1, 1, 1);
+        controls_grid.attach (controls_stack, 2, 1, 1, 1);
 
         var modifiers_label = new Granite.HeaderLabel (_("Modifiers"));
         modifiers_label.get_style_context ().add_class (Granite.STYLE_CLASS_H2_LABEL);
@@ -315,6 +313,10 @@ public class Renamer : Gtk.Grid {
 
         reset ();
 
+        add_modifier (false);
+
+        show_all ();
+
         sort_by_combo.changed.connect (() => {
             old_list.set_default_sort_func (old_list_sorter);
 
@@ -327,9 +329,22 @@ public class Renamer : Gtk.Grid {
         });
 
         base_name_combo.changed.connect (() => {
-            base_name_entry_revealer.reveal_child = base_name_combo.get_active () == RenameBase.CUSTOM;
+            switch (base_name_combo.get_active ()) {
+                case RenameBase.ORIGINAL:
+                    controls_stack.visible_child = protect_extension_grid;
+                    break;
+                case RenameBase.CUSTOM:
+                    controls_stack.visible_child = base_name_entry;
+                    break;
+                default:
+                    break;
+            }
+
             schedule_view_update ();
         });
+
+        base_name_combo.active = RenameBase.ORIGINAL;
+        controls_stack.visible_child = protect_extension_grid;
 
         base_name_entry.changed.connect (() => {
             schedule_view_update ();
@@ -338,10 +353,6 @@ public class Renamer : Gtk.Grid {
         add_button.clicked.connect (() => {
             add_modifier (true);
         });
-
-        add_modifier (false);
-
-        show_all ();
     }
 
     public void add_files (File[] files) {
@@ -505,7 +516,7 @@ public class Renamer : Gtk.Grid {
 
             if (custom_basename) {
                 input_name = base_name_entry.get_text ();
-            } else {
+            } else if (protect_extension_switch.active) {
                 input_name = strip_extension (file_name, out extension);
             }
 
