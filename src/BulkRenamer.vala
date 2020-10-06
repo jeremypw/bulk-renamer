@@ -709,6 +709,15 @@ public class Renamer : Gtk.Grid {
         return sort_type_switch.active;
     }
 
+    public bool get_protect_extension () {
+        return protect_extension_switch.active;
+    }
+
+    public void set_protect_extension (bool protect) {
+        protect_extension_switch.active = protect;
+    }
+
+/*---------------------------------------------------------------------------------------*/
     private class OldFilesList : Gtk.ScrolledWindow {
         /** Drag and drop support **/
         protected const Gdk.DragAction FILE_DRAG_ACTIONS = Gdk.DragAction.COPY;

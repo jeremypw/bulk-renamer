@@ -35,6 +35,11 @@
       <summary>Custom base name</summary>
       <description>Name to use as a starting point</description>
     </key>
+    <key type = "b" name="protect-extension">
+      <default>true</default>
+      <summary>Protect extension</summary>
+      <description>Whether the extension can be altered when using original name as base</description>
+    </key>
     <key name="sort-by" enum="io.github.jeremypw.bulk-renamer.sortby">
       <default>'name'</default>
       <summary>Type of input sort</summary>
@@ -49,7 +54,7 @@
       <summary>Details of modifiers</summary>
       <default>[]</default>
       <summary>Array of modifier specifications</summary>
-      <description>Array of modifier specifications</description>
+      <description>Array of modifier specifications. Do not manually edit this</description>
     </key>
   </schema>
 </schemalist>

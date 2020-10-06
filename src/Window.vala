@@ -176,6 +176,7 @@ public class BulkRenamer.Window : Gtk.ApplicationWindow {
             var reversed = app_settings.get_boolean ("reversed");
 
             renamer.set_sort_order (sort, reversed);
+            renamer.set_protect_extension (app_settings.get_boolean ("protect-extension"));
         } else {
             if (BulkRenamer.App.base_name != "") {
                 renamer.set_custom_base_name (BulkRenamer.App.base_name);
@@ -263,6 +264,8 @@ public class BulkRenamer.Window : Gtk.ApplicationWindow {
         app_settings.set_enum ("base-type", renamer.get_base_type ());
         app_settings.set_string ("custom-base", renamer.get_custom_base_name ());
 
+        /* Save protect extension */
+        app_settings.set_boolean ("protect-extension", renamer.get_protect_extension ());
         /* Save modifier settings */
         var vb = new VariantBuilder (new VariantType ("av"));
         foreach (var modifier in renamer.modifier_chain) {
