@@ -90,41 +90,25 @@ public class Renamer : Gtk.Grid {
         };
         base_name_entry_revealer.add (base_name_entry);
 
-        var sort_by_label = new Gtk.Label (_("Sort by:"));
-
-        sort_by_combo = new Gtk.ComboBoxText () {
-            valign = Gtk.Align.CENTER,
-            margin = 3
-        };
-        sort_by_combo.insert (RenameSortBy.NAME, "NAME", RenameSortBy.NAME.to_string ());
-        sort_by_combo.insert (RenameSortBy.CREATED, "CREATED", RenameSortBy.CREATED.to_string ());
-        sort_by_combo.insert (RenameSortBy.MODIFIED, "MODIFIED", RenameSortBy.MODIFIED.to_string ());
-        sort_by_combo.set_active (RenameSortBy.NAME);
-
-        var sort_by_grid = new Gtk.Grid () {
-            orientation = Gtk.Orientation.HORIZONTAL,
+        var protect_extension_grid = new Gtk.Grid () {
             column_spacing = 6,
-            halign = Gtk.Align.END,
-            valign = Gtk.Align.CENTER
-        };
-        sort_by_grid.add (sort_by_label);
-        sort_by_grid.add (sort_by_combo);
-
-        var sort_type_label = new Gtk.Label (_("Reverse"));
-
-        sort_type_switch = new Gtk.Switch () {
-            valign = Gtk.Align.CENTER
+            tooltip_text = _("Do not apply changes to file extension")
         };
 
-        var sort_type_grid = new Gtk.Grid () {
-            orientation = Gtk.Orientation.HORIZONTAL,
-            column_spacing = 6,
-            halign = Gtk.Align.END,
+        var protect_extension_label = new Gtk.Label (_("Protect Extension")) {
+            hexpand = true,
+            halign = Gtk.Align.END
+        };
+
+        var protect_extension_switch = new Gtk.Switch () {
+            halign = Gtk.Align.START,
+            vexpand = false,
             valign = Gtk.Align.CENTER,
-            margin = 3
+            active = true
         };
-        sort_type_grid.add (sort_type_switch);
-        sort_type_grid.add (sort_type_label);
+
+        protect_extension_grid.attach (protect_extension_label, 0, 0, 1, 1);
+        protect_extension_grid.attach (protect_extension_switch, 1, 0, 1, 1);
 
         var controls_grid = new Gtk.Grid () {
             orientation = Gtk.Orientation.HORIZONTAL,
@@ -135,6 +119,7 @@ public class Renamer : Gtk.Grid {
         controls_grid.attach (base_name_label, 0, 0, 2, 1);
         controls_grid.attach (base_name_combo, 0, 1, 1, 1);
         controls_grid.attach (base_name_entry_revealer, 1, 1, 1, 1);
+        controls_grid.attach (protect_extension_grid, 2, 1, 1, 1);
 
         var modifiers_label = new Granite.HeaderLabel (_("Modifiers"));
         modifiers_label.get_style_context ().add_class (Granite.STYLE_CLASS_H2_LABEL);
@@ -193,13 +178,48 @@ public class Renamer : Gtk.Grid {
         );
         clear_button.get_style_context ().add_class (Gtk.STYLE_CLASS_FLAT);
 
+        var sort_by_label = new Gtk.Label (_("Sort by:"));
+
+        sort_by_combo = new Gtk.ComboBoxText () {
+            valign = Gtk.Align.CENTER,
+            margin = 3
+        };
+        sort_by_combo.insert (RenameSortBy.NAME, "NAME", RenameSortBy.NAME.to_string ());
+        sort_by_combo.insert (RenameSortBy.CREATED, "CREATED", RenameSortBy.CREATED.to_string ());
+        sort_by_combo.insert (RenameSortBy.MODIFIED, "MODIFIED", RenameSortBy.MODIFIED.to_string ());
+        sort_by_combo.set_active (RenameSortBy.NAME);
+
+        var sort_by_grid = new Gtk.Grid () {
+            orientation = Gtk.Orientation.HORIZONTAL,
+            column_spacing = 6,
+            halign = Gtk.Align.END,
+            valign = Gtk.Align.CENTER
+        };
+        sort_by_grid.add (sort_by_label);
+        sort_by_grid.add (sort_by_combo);
+
+        var sort_type_label = new Gtk.Label (_("Reverse"));
+
+        sort_type_switch = new Gtk.Switch () {
+            valign = Gtk.Align.CENTER
+        };
+
+        var sort_type_grid = new Gtk.Grid () {
+            orientation = Gtk.Orientation.HORIZONTAL,
+            column_spacing = 6,
+            halign = Gtk.Align.END,
+            valign = Gtk.Align.CENTER,
+            margin = 3
+        };
+        sort_type_grid.add (sort_type_switch);
+        sort_type_grid.add (sort_type_label);
+
         var old_files_header = new Gtk.Box (Gtk.Orientation.HORIZONTAL, 6);
         old_files_header.add (original_label);
 
         old_files_header.pack_end (clear_button, false, false, 6);
         old_files_header.pack_end (sort_type_grid, false, false, 6);
         old_files_header.pack_end (sort_by_grid, false, false, 6);
-
 
         var header_size_group = new Gtk.SizeGroup (Gtk.SizeGroupMode.VERTICAL);
         header_size_group.add_widget (old_files_header);
