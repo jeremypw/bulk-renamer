@@ -150,8 +150,8 @@ public class BulkRenamer.Window : Gtk.ApplicationWindow {
         });
 
         if (BulkRenamer.App.restore) {
-            renamer.set_base_type (app_settings.get_int ("base-type"));
-            renamer.set_base_name (app_settings.get_string ("custom-base"));
+            renamer.set_base_type (app_settings.get_enum ("base-type"));
+            renamer.set_custom_base_name (app_settings.get_string ("custom-base"));
 
             /* Restore modifiers */
             Variant mod_vars = app_settings.get_value ("modifier-list"); // Type "av"
@@ -170,7 +170,7 @@ public class BulkRenamer.Window : Gtk.ApplicationWindow {
                 count++;
             }
 
-            warning ("%i modifiers restored", count);
+            debug ("%i modifiers restored", count);
 
             var sort = (RenameSortBy)(app_settings.get_enum ("sort-by"));
             var reversed = app_settings.get_boolean ("reversed");
@@ -178,7 +178,7 @@ public class BulkRenamer.Window : Gtk.ApplicationWindow {
             renamer.set_sort_order (sort, reversed);
         } else {
             if (BulkRenamer.App.base_name != "") {
-                renamer.set_base_name (BulkRenamer.App.base_name);
+                renamer.set_custom_base_name (BulkRenamer.App.base_name);
             }
 
             if (BulkRenamer.App.sort_by_created) {

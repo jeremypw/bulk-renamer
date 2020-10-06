@@ -409,16 +409,6 @@ public class Renamer : Gtk.Grid {
         sort_type_switch.active = reversed;
     }
 
-    public void set_base_name (string? base_name) {
-        if (base_name != null) {
-            base_name_combo.set_active (RenameBase.CUSTOM);
-            base_name_entry.text = base_name;
-        } else {
-            base_name_combo.set_active (RenameBase.ORIGINAL);
-            base_name_entry.text = "";
-        }
-    }
-
     public void rename_files () {
         var new_files = new File[number_of_files];
         int index = 0;
