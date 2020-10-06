@@ -75,7 +75,7 @@ public enum RenamePosition {
                 return _("Text to replace the target");
 
             default:
-                assert_not_reached ();
+                return _("Unrecognized RenamePosition");
         }
     }
 }

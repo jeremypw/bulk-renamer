@@ -432,12 +432,12 @@ public class Modifier : Gtk.ListBoxRow {
         int active;
         string text;
         iter.next ("(is)", out active, out text);
-        position_combo.active = active;
+        position_combo.active = active.clamp (0, 2);
         search_entry.text = text;
 
         //Text/Number Sequence/Date combo - enum - type "i"
         iter.next ("i", out active);
-        mode_combo.active = active;
+        mode_combo.active = active.clamp (0, 2);
 
         //Textsource - string - type "s"
         iter.next ("s", out text);
@@ -446,14 +446,14 @@ public class Modifier : Gtk.ListBoxRow {
         //NumberSequence start/digits uint/uint - type "(ii)"
         int start, digits;
         iter.next ("(ii)", out start, out digits);
-        start_number_spin_button.@value = (double)start;
-        digits_spin_button.@value = (double)digits;
+        start_number_spin_button.@value = (double)(start.clamp (0, int.MAX));
+        digits_spin_button.@value = (double)(digits.clamp (0, 5));
 
         //DateSequence format/startdatetime enum/int64 - "(ix)"
         int64 start_unix;
         iter.next ("(ix)", out active, out start_unix);
-        date_format_combo.active = active;
-        DateTime start_datetime = new DateTime.from_unix_local (start_unix);
+        date_format_combo.active = active.clamp (0, 4);
+        DateTime start_datetime = new DateTime.from_unix_local (start_unix.clamp (0, int64.MAX));
         date_picker.date = start_datetime;
         time_picker.time = start_datetime;
 
