@@ -518,21 +518,38 @@ public class Renamer : Gtk.Grid {
                 input_name = base_name_entry.get_text ();
             } else if (protect_extension_switch.active) {
                 input_name = strip_extension (file_name, out extension);
+            } else {
+                input_name = file_name;
             }
 
             foreach (Modifier mod in modifier_chain) {
-                output_name = mod.rename (input_name, index);
+                if (!custom_basename &&
+                    !protect_extension_switch.active &&
+                    mod.is_suffix ()) {// Do not want to place anything after extension
+
+                    input_name = strip_extension (input_name, out extension);
+                    output_name = mod.rename (input_name, index) + extension;
+                } else {
+                    output_name = mod.rename (input_name, index);
+                }
+
                 input_name = output_name;
             }
 
-            var final_name = output_name.concat (extension);
+            string final_name;
+            if (protect_extension_switch.active) {
+                final_name = output_name.concat (extension);
+            } else {
+                final_name = output_name;
+            }
+
             bool name_invalid = false;
 
             if (final_name == previous_final_name ||
                 final_name == file_name ||
                 invalid_name (final_name, file_name)) {
 
-                debug ("blank or duplicate or existing filename");
+                warning ("Invalid modified filename %s - blank or duplicate or existing filename", final_name);
                 name_invalid = true;
                 can_rename = false;
             }

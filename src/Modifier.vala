@@ -322,7 +322,11 @@ public class Modifier : Gtk.ListBoxRow {
                 return new_text.concat (separator_entry.text, input);
 
             case RenamePosition.REPLACE:
-                return input.replace (search_entry.text, new_text);
+                if (search_entry.text != "") {
+                    return input.replace (search_entry.text, new_text);
+                } else {
+                    break;
+                }
 
             default:
                 break;
@@ -358,6 +362,10 @@ public class Modifier : Gtk.ListBoxRow {
             default:
                 assert_not_reached ();
         }
+    }
+
+    public bool is_suffix () {
+        return position_combo.active == RenamePosition.SUFFIX;
     }
 
     public Variant to_variant () {
