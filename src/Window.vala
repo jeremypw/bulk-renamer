@@ -239,7 +239,7 @@ public class BulkRenamer.Window : Gtk.ApplicationWindow {
     }
 
     private void action_undo () {
-
+        renamer.undo ();
     }
 
     private void action_clear_files () {

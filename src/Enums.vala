@@ -37,7 +37,7 @@ public enum RenameMode {
                 return _("Date");
 
             default:
-                assert_not_reached ();
+                return "";
         }
     }
 }
@@ -59,7 +59,7 @@ public enum RenamePosition {
                 return _("Replace");
 
             default:
-                assert_not_reached ();
+                return "";
         }
     }
 
@@ -75,7 +75,8 @@ public enum RenamePosition {
                 return _("Text to replace the target");
 
             default:
-                return _("Unrecognized RenamePosition");
+                return "";
+
         }
     }
 }
@@ -97,7 +98,7 @@ public enum RenameSortBy {
                 return _("Last modification date");
 
             default:
-                assert_not_reached ();
+                return "";
         }
     }
 }
@@ -122,7 +123,7 @@ public enum RenameDateFormat {
             case RenameDateFormat.ISO_DATETIME:
                 return _("ISO 8601 Format - Date and Time");
             default:
-                assert_not_reached ();
+                return "";
         }
     }
 }
@@ -139,7 +140,7 @@ public enum RenameDateType {
             case RenameDateType.CHOOSE:
                 return _("Choose a date");
             default:
-                assert_not_reached ();
+                return "";
         }
     }
 }
@@ -155,7 +156,7 @@ public enum RenameBase {
             case RenameBase.CUSTOM:
                 return _("Enter a base name");
             default:
-                assert_not_reached ();
+                return "";
         }
     }
 }
