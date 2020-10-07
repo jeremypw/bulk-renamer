@@ -155,6 +155,10 @@ public class BulkRenamer.Window : Gtk.ApplicationWindow {
             renamer.undo ();
         });
 
+        renamer.resized.connect (() => {
+            resize (1, 1);
+        });
+
         if (BulkRenamer.App.restore) {
             action_restore ();
         } else {

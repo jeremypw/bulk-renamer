@@ -51,6 +51,8 @@ public class Renamer : Gtk.Grid {
 
     public string directory { get; private set; default = ""; }
 
+    public signal void resized ();
+
     public Renamer (File[]? files = null) {
         if (files != null) {
             add_files (files);
@@ -435,6 +437,7 @@ public class Renamer : Gtk.Grid {
 
         modifier_chain.clear ();
         add_modifier (false);
+        resized ();
     }
 
     public void set_sort_order (RenameSortBy sort_by, bool reversed) {
