@@ -28,20 +28,27 @@ public class BulkRenamer.Window : Gtk.ApplicationWindow {
     public const string ACTION_OPEN = "action-open";
     public const string ACTION_UNDO = "action-undo";
     public const string ACTION_CLEAR_FILES = "action-clear-files";
+    public const string ACTION_RESET = "action-reset";
+    public const string ACTION_RESTORE = "action-restore";
     private const ActionEntry[] ACTION_ENTRIES = {
         { ACTION_OPEN, action_open },
         { ACTION_UNDO, action_undo },
-        { ACTION_CLEAR_FILES, action_clear_files }
+        { ACTION_CLEAR_FILES, action_clear_files },
+        { ACTION_RESET, action_reset },
+        { ACTION_RESTORE, action_restore }
     };
 
     public static Gee.MultiMap<string, string> action_accelerators = new Gee.HashMultiMap<string, string> ();
     private static Settings app_settings;
 
     static construct {
-        app_settings = new Settings ("io.github.jeremypw.bulk-renamer");
+        app_settings = BulkRenamer.App.app_settings;
+
         action_accelerators.set (ACTION_OPEN, "<Control>o");
         action_accelerators.set (ACTION_UNDO, "<Control>z");
         action_accelerators.set (ACTION_CLEAR_FILES, "<Control>Delete");
+        action_accelerators.set (ACTION_RESET, "<Control>X");
+        action_accelerators.set (ACTION_RESTORE, "<Control>R");
     }
 
     public Window (Gtk.Application app) {
@@ -63,7 +70,6 @@ public class BulkRenamer.Window : Gtk.ApplicationWindow {
         }
 
         title = _("Bulk Renamer");
-        set_default_size (600, 400);
 
         renamer = new Renamer ();
         renamer.margin = 12;
@@ -150,33 +156,7 @@ public class BulkRenamer.Window : Gtk.ApplicationWindow {
         });
 
         if (BulkRenamer.App.restore) {
-            renamer.set_base_type (app_settings.get_enum ("base-type"));
-            renamer.set_custom_base_name (app_settings.get_string ("custom-base"));
-
-            /* Restore modifiers */
-            Variant mod_vars = app_settings.get_value ("modifier-list"); // Type "av"
-            var iter = new VariantIter (mod_vars);
-
-            Variant mod_var;
-
-            int count = 0;
-            while (iter.next ("v", out mod_var)) {
-                if (count == 0) {
-                    renamer.modifier_chain[0].set_from_variant (mod_var);
-                } else {
-                    renamer.add_modifier (true).set_from_variant (mod_var);
-                }
-
-                count++;
-            }
-
-            debug ("%i modifiers restored", count);
-
-            var sort = (RenameSortBy)(app_settings.get_enum ("sort-by"));
-            var reversed = app_settings.get_boolean ("reversed");
-
-            renamer.set_sort_order (sort, reversed);
-            renamer.set_protect_extension (app_settings.get_boolean ("protect-extension"));
+            action_restore ();
         } else {
             if (BulkRenamer.App.base_name != "") {
                 renamer.set_custom_base_name (BulkRenamer.App.base_name);
@@ -207,6 +187,48 @@ public class BulkRenamer.Window : Gtk.ApplicationWindow {
 
                 break;
         }
+    }
+
+    private void action_restore () {
+        renamer.set_base_type (app_settings.get_enum ("base-type"));
+        renamer.set_custom_base_name (app_settings.get_string ("custom-base"));
+
+        /* Restore modifiers */
+        renamer.clear_mods ();
+        Variant mod_vars = app_settings.get_value ("modifier-list"); // Type "av"
+        var iter = new VariantIter (mod_vars);
+
+        Variant mod_var;
+
+        int count = 0;
+        while (iter.next ("v", out mod_var)) {
+            if (count == 0) {
+                renamer.modifier_chain[0].set_from_variant (mod_var);
+            } else {
+                renamer.add_modifier (true).set_from_variant (mod_var);
+            }
+
+            count++;
+        }
+
+        debug ("%i modifiers restored", count);
+
+        var sort = (RenameSortBy)(app_settings.get_enum ("sort-by"));
+        var reversed = app_settings.get_boolean ("reversed");
+
+        renamer.set_sort_order (sort, reversed);
+        renamer.set_protect_extension (app_settings.get_boolean ("protect-extension"));
+    }
+
+    private void action_reset () {
+        /* LAZY - this is easier than retrieving defaults from settings */
+        renamer.set_base_type (0);
+        renamer.set_custom_base_name ("");
+
+        renamer.clear_mods ();
+
+        renamer.set_sort_order (0, false);
+        renamer.set_protect_extension (true);
     }
 
     public void set_files (File[] files) {

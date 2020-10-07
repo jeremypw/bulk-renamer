@@ -248,12 +248,16 @@ public class Modifier : Gtk.ListBoxRow {
     }
 
     public void reset () {
-        mode_combo.active = RenameMode.TEXT;
         text_entry.text = "";
         separator_entry.text = "";
         search_entry.text = "";
 
-        date_format_combo.set_active (RenameDateFormat.DEFAULT_DATE);
+        start_number_spin_button.@value = 0;
+        digits_spin_button.@value = 1;
+
+        position_combo.active = 0;
+        mode_combo.active = 0;
+        date_format_combo.active = 0;
     }
 
     public Modifier (bool _allow_remove) {

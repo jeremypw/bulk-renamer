@@ -110,6 +110,7 @@ public class Renamer : Gtk.Grid {
         controls_stack.add (protect_extension_grid);
 
         var controls_grid = new Gtk.Grid () {
+            vexpand = false,
             orientation = Gtk.Orientation.HORIZONTAL,
             column_spacing = 12,
             margin_bottom = 12
@@ -132,11 +133,20 @@ public class Renamer : Gtk.Grid {
         };
         add_button.get_style_context ().add_class (Gtk.STYLE_CLASS_FLAT);
 
+        var clear_mods_button = new Gtk.MenuButton () {
+            valign = Gtk.Align.CENTER,
+            image = new Gtk.Image.from_icon_name ("edit-clear", Gtk.IconSize.DND),
+            tooltip_text = _("Clear modifiers"),
+            sensitive = true
+        };
+        clear_mods_button.get_style_context ().add_class (Gtk.STYLE_CLASS_FLAT);
+
         var action_bar = new Gtk.ActionBar () {
             margin_top = 12
         };
         action_bar.get_style_context ().add_class (Gtk.STYLE_CLASS_INLINE_TOOLBAR);
         action_bar.pack_start (add_button);
+        action_bar.pack_end (clear_mods_button);
 
         modifier_grid = new Gtk.Grid () {
             orientation = Gtk.Orientation.VERTICAL,
@@ -311,8 +321,6 @@ public class Renamer : Gtk.Grid {
         add (modifier_grid);
         add (lists_grid);
 
-        reset ();
-
         add_modifier (false);
 
         show_all ();
@@ -353,6 +361,8 @@ public class Renamer : Gtk.Grid {
         add_button.clicked.connect (() => {
             add_modifier (true);
         });
+
+        clear_mods_button.clicked.connect (clear_mods);
     }
 
     public void add_files (File[] files) {
@@ -418,21 +428,13 @@ public class Renamer : Gtk.Grid {
         return mod;
     }
 
-    public void reset () {
-        base_name_combo.set_active (RenameBase.ORIGINAL);
-        base_name_entry.text = "";
-
-        bool first = true;
-        foreach (var mod in modifier_chain) {
-            if (first) {
-                mod.reset ();
-                first = false;
-            } else {
-                mod.destroy ();
-            }
+    public void clear_mods () {
+        foreach (var mod in modifier_listbox.get_children ()) {
+            mod.destroy ();
         }
 
-        schedule_view_update ();
+        modifier_chain.clear ();
+        add_modifier (false);
     }
 
     public void set_sort_order (RenameSortBy sort_by, bool reversed) {
@@ -473,9 +475,7 @@ public class Renamer : Gtk.Grid {
         undo_stack.offer_head (undo_map);
         can_undo = true;
 
-        replace_files (new_files);
-
-        reset ();
+        clear_files ();
     }
 
     private uint view_update_timeout_id = 0;

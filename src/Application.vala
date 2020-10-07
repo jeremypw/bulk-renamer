@@ -39,8 +39,13 @@ public class BulkRenamer.App : Gtk.Application {
     public static bool sort_reversed = false;
     public static string[] file_names = {};
     public static bool restore = true;
+    public static Settings app_settings;
 
     private BulkRenamer.Window? main_window;
+
+    static construct {
+        app_settings = new Settings ("io.github.jeremypw.bulk-renamer");
+    }
 
    construct {
         application_id = "com.github.jeremypw.bulk-renamer";
