@@ -206,13 +206,7 @@ public class BulkRenamer.Window : Gtk.ApplicationWindow {
 
         int count = 0;
         while (iter.next ("v", out mod_var)) {
-            if (count == 0) {
-                renamer.modifier_chain[0].set_from_variant (mod_var);
-            } else {
-                renamer.add_modifier (true).set_from_variant (mod_var);
-            }
-
-            count++;
+            renamer.set_modifier_from_variant (mod_var, count++);
         }
 
         debug ("%i modifiers restored", count);
@@ -294,8 +288,8 @@ public class BulkRenamer.Window : Gtk.ApplicationWindow {
         app_settings.set_boolean ("protect-extension", renamer.get_protect_extension ());
         /* Save modifier settings */
         var vb = new VariantBuilder (new VariantType ("av"));
-        foreach (var modifier in renamer.modifier_chain) {
-            vb.add ("v", modifier.to_variant ());
+        foreach (var widget in renamer.get_modifiers ()) {
+            vb.add ("v", ((Modifier)widget).to_variant ());
         }
 
         app_settings.set_value ("modifier-list", vb.end ());

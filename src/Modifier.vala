@@ -35,11 +35,12 @@ public class Modifier : Gtk.ListBoxRow {
     private StringBuilder seq_builder;
     private Gtk.Entry separator_entry;
     private Gtk.Entry search_entry;
-    private Gtk.Revealer remove_revealer;
-
-    public bool allow_remove { get; set; }
+    public bool is_first { get; set; }
+    public bool is_last { get; set; }
 
     public signal void remove_request ();
+    public signal void move_up_request ();
+    public signal void move_down_request ();
     public signal void update_request ();
 
     construct {
@@ -203,24 +204,44 @@ public class Modifier : Gtk.ListBoxRow {
         position_combo.insert (RenamePosition.REPLACE, "REPLACE", RenamePosition.REPLACE.to_string ());
         position_combo.active = RenamePosition.SUFFIX;
 
-        var remove_button = new Gtk.Button.from_icon_name ("process-stop", Gtk.IconSize.LARGE_TOOLBAR) {
+        var move_up_button = new Gtk.Button.from_icon_name ("go-up", Gtk.IconSize.SMALL_TOOLBAR) {
+            halign = Gtk.Align.END,
+            valign = Gtk.Align.CENTER,
+            tooltip_text = (_("Move modification up"))
+        };
+
+        move_up_button.get_style_context ().add_class (Gtk.STYLE_CLASS_FLAT);
+
+        var move_down_button = new Gtk.Button.from_icon_name ("go-down", Gtk.IconSize.SMALL_TOOLBAR) {
+            halign = Gtk.Align.END,
+            valign = Gtk.Align.CENTER,
+            vexpand = false,
+            hexpand = false,
+            tooltip_text = (_("Move modification down"))
+        };
+
+        move_down_button.get_style_context ().add_class (Gtk.STYLE_CLASS_FLAT);
+
+        var move_grid = new Gtk.Grid () {
+            orientation = Gtk.Orientation.HORIZONTAL
+        };
+
+        move_grid.add (move_up_button);
+        move_grid.add (move_down_button);
+
+        var remove_button = new Gtk.Button.from_icon_name ("process-stop", Gtk.IconSize.SMALL_TOOLBAR) {
             halign = Gtk.Align.END,
             valign = Gtk.Align.CENTER,
             tooltip_text = (_("Remove this modification"))
-
         };
         remove_button.get_style_context ().add_class (Gtk.STYLE_CLASS_FLAT);
-
-        remove_revealer = new Gtk.Revealer () {
-            halign = Gtk.Align.END
-        };
-        remove_revealer.add (remove_button);
 
         grid.add (position_combo);
         grid.add (mode_combo);
         grid.add (mode_stack);
         grid.add (position_stack);
-        grid.add (remove_revealer);
+        grid.add (move_grid);
+        grid.add (remove_button);
 
         add (grid);
 
@@ -284,6 +305,18 @@ public class Modifier : Gtk.ListBoxRow {
             remove_request ();
         });
 
+        move_up_button.clicked.connect (() => {
+            move_up_request ();
+        });
+
+        move_down_button.clicked.connect (() => {
+            move_down_request ();
+        });
+
+        bind_property ("is-first", this, "allow-remove", BindingFlags.INVERT_BOOLEAN | BindingFlags.SYNC_CREATE);
+        bind_property ("is-first", move_up_button, "sensitive", BindingFlags.INVERT_BOOLEAN | BindingFlags.SYNC_CREATE);
+        bind_property ("is-last", move_down_button, "sensitive", BindingFlags.INVERT_BOOLEAN | BindingFlags.SYNC_CREATE);
+
         reset ();
     }
 
@@ -301,11 +334,6 @@ public class Modifier : Gtk.ListBoxRow {
         position_combo.active = 0;
         mode_combo.active = 0;
         date_format_combo.active = 0;
-    }
-
-    public Modifier (bool _allow_remove) {
-        Object (allow_remove: _allow_remove);
-        remove_revealer.reveal_child = allow_remove;
     }
 
     public void change_rename_mode () {

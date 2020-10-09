@@ -24,7 +24,6 @@
 public class Renamer : Gtk.Grid {
     private Gee.HashMap<string, File> file_map;
     private Gee.HashMap<string, FileInfo> file_info_map;
-    public Gee.ArrayList<Modifier> modifier_chain { get; private set; }
     private Gee.LinkedList<Gee.HashMap<string, string>> undo_stack;
 
     private Gtk.Grid modifier_grid;
@@ -68,7 +67,6 @@ public class Renamer : Gtk.Grid {
 
         file_map = new Gee.HashMap<string, File> ();
         file_info_map = new Gee.HashMap<string, FileInfo> ();
-        modifier_chain = new Gee.ArrayList<Modifier> ();
         undo_stack = new Gee.LinkedList<Gee.HashMap<string, string>> ();
 
         var base_name_label = new Granite.HeaderLabel (_("Base"));
@@ -323,7 +321,7 @@ public class Renamer : Gtk.Grid {
         add (modifier_grid);
         add (lists_grid);
 
-        add_modifier (false);
+        add_modifier ();
 
         show_all ();
 
@@ -361,7 +359,7 @@ public class Renamer : Gtk.Grid {
         });
 
         add_button.clicked.connect (() => {
-            add_modifier (true);
+            add_modifier ();
         });
 
         clear_mods_button.clicked.connect (clear_mods);
@@ -413,16 +411,40 @@ public class Renamer : Gtk.Grid {
         schedule_view_update ();
     }
 
-    public Modifier add_modifier (bool allow_remove) {
-        var mod = new Modifier (allow_remove);
-        modifier_chain.add (mod);
+    public Modifier add_modifier () {
+        var children = modifier_listbox.get_children ();
+        var is_first = children.length () == 0;
+        var mod = new Modifier ();
+        mod.is_first = is_first;
+        mod.is_last = true;
+
         modifier_listbox.add (mod);
+
         mod.update_request.connect (schedule_view_update);
         mod.remove_request.connect (() => {
-            modifier_chain.remove (mod);
             mod.destroy ();
             queue_draw ();
             schedule_view_update ();
+        });
+
+        mod.move_up_request.connect (() => {
+            var mods = modifier_listbox.get_children ();
+            var index = mods.index ((Gtk.Widget)mod);
+            if (index > 0) {
+                modifier_listbox.remove (mod);
+                modifier_listbox.insert (mod, index - 1);
+                schedule_view_update ();
+            }
+        });
+
+        mod.move_down_request.connect (() => {
+            var mods = modifier_listbox.get_children ();
+            var index = mods.index ((Gtk.Widget)mod);
+            if (index < mods.length () - 1) {
+                modifier_listbox.remove (mod);
+                modifier_listbox.insert (mod, index + 1);
+                schedule_view_update ();
+            }
         });
 
         schedule_view_update ();
@@ -435,9 +457,25 @@ public class Renamer : Gtk.Grid {
             mod.destroy ();
         }
 
-        modifier_chain.clear ();
-        add_modifier (false);
+        add_modifier ();
+
         resized ();
+    }
+
+    public void set_modifier_from_variant (Variant settings, uint index) {
+        var children = modifier_listbox.get_children ();
+        Modifier mod;
+        if (index < children.length ()) {
+            mod = (Modifier)(children.nth_data (index));
+        } else {
+            mod = add_modifier ();
+        }
+
+        mod.set_from_variant (settings);
+    }
+
+    public List<unowned Gtk.Widget> get_modifiers () {
+        return modifier_listbox.get_children ();
     }
 
     public void set_sort_order (RenameSortBy sort_by, bool reversed) {
@@ -525,7 +563,8 @@ public class Renamer : Gtk.Grid {
                 input_name = file_name;
             }
 
-            foreach (Modifier mod in modifier_chain) {
+            foreach (Gtk.Widget w in modifier_listbox.get_children ()) {
+                var mod = (Modifier)w;
                 if (!custom_basename &&
                     !protect_extension_switch.active &&
                     mod.is_suffix ()) {// Do not want to place anything after extension
@@ -564,6 +603,16 @@ public class Renamer : Gtk.Grid {
             index++;
             return false;
         });
+
+        index = 0;
+        var children = modifier_listbox.get_children ();
+        uint last_index = children.length () - 1;
+        foreach (Gtk.Widget w in children) {
+            var mod = (Modifier)w;
+            mod.is_first = index == 0;
+            mod.is_last = index == last_index;
+            index++;
+        }
 
         updating = false;
     }
