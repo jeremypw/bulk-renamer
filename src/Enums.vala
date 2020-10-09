@@ -22,16 +22,20 @@
 public enum RenameMode {
     TEXT,
     NUMBER,
+    LETTER,
     DATETIME,
     INVALID;
 
     public string to_string () {
         switch (this) {
+            case RenameMode.TEXT:
+                return _("Text");
+
             case RenameMode.NUMBER:
                 return _("Number sequence");
 
-            case RenameMode.TEXT:
-                return _("Text");
+            case RenameMode.LETTER:
+                return _("Alphabetic sequence");
 
             case RenameMode.DATETIME:
                 return _("Date");

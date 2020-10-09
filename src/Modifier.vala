@@ -30,6 +30,8 @@ public class Modifier : Gtk.ListBoxRow {
     private Gtk.SpinButton digits_spin_button;
     private Gtk.SpinButton start_number_spin_button;
     private Gtk.Entry text_entry;
+    private Gtk.Entry letter_sequence_entry;
+    private Gtk.Switch upper_case_switch;
     private Gtk.Entry separator_entry;
     private Gtk.Entry search_entry;
     private Gtk.Revealer remove_revealer;
@@ -54,6 +56,7 @@ public class Modifier : Gtk.ListBoxRow {
         };
         mode_combo.insert (RenameMode.TEXT, "TEXT", RenameMode.TEXT.to_string ());
         mode_combo.insert (RenameMode.NUMBER, "NUMBER", RenameMode.NUMBER.to_string ());
+        mode_combo.insert (RenameMode.LETTER, "LETTER", RenameMode.LETTER.to_string ());
         mode_combo.insert (RenameMode.DATETIME, "DATETIME", RenameMode.DATETIME.to_string ());
 
         text_entry = new Gtk.Entry () {
@@ -86,6 +89,29 @@ public class Modifier : Gtk.ListBoxRow {
         digits_grid.add (start_number_spin_button);
         digits_grid.add (digits_label);
         digits_grid.add (digits_spin_button);
+
+        letter_sequence_entry = new Gtk.Entry () {
+            placeholder_text = _("Starting alphanumeric sequence"),
+            text = "a",
+            input_purpose = Gtk.InputPurpose.ALPHA
+        };
+
+        upper_case_switch = new Gtk.Switch () {
+            active = false,
+            vexpand = false,
+            valign = Gtk.Align.CENTER
+        };
+
+        var upper_case_label = new Gtk.Label (_("Uppercase"));
+
+        var letters_grid = new Gtk.Grid () {
+            orientation = Gtk.Orientation.HORIZONTAL,
+            column_spacing = 6
+        };
+
+        letters_grid.add (letter_sequence_entry);
+        letters_grid.add (upper_case_label);
+        letters_grid.add (upper_case_switch);
 
         date_format_combo = new Gtk.ComboBoxText () {
             valign = Gtk.Align.CENTER
@@ -122,10 +148,12 @@ public class Modifier : Gtk.ListBoxRow {
             vexpand = false,
             hexpand = false
         };
-        mode_stack.add_named (digits_grid, "NUMBER");
+
         mode_stack.add_named (text_entry, "TEXT");
+        mode_stack.add_named (digits_grid, "NUMBER");
+        mode_stack.add_named (letters_grid, "LETTER");
         mode_stack.add_named (date_time_grid, "DATETIME");
-        mode_stack.set_visible_child_name ("NUMBER");
+        mode_stack.set_visible_child_name ("TEXT");
 
         separator_entry = new Gtk.Entry () {
             halign = Gtk.Align.END,
@@ -230,6 +258,14 @@ public class Modifier : Gtk.ListBoxRow {
             update_request ();
         });
 
+        letter_sequence_entry.changed.connect (() => {
+            update_request ();
+        });
+
+        upper_case_switch.state_set.connect (() => {
+            update_request ();
+        });
+
         separator_entry.changed.connect (() => {
             update_request ();
         });
@@ -252,6 +288,9 @@ public class Modifier : Gtk.ListBoxRow {
         separator_entry.text = "";
         search_entry.text = "";
 
+        letter_sequence_entry.text = "a";
+        upper_case_switch.active = false;
+
         start_number_spin_button.@value = 0;
         digits_spin_button.@value = 1;
 
@@ -267,12 +306,16 @@ public class Modifier : Gtk.ListBoxRow {
 
     public void change_rename_mode () {
         switch (mode_combo.get_active ()) {
+            case RenameMode.TEXT:
+                mode_stack.set_visible_child_name ("TEXT");
+                break;
+
             case RenameMode.NUMBER:
                 mode_stack.set_visible_child_name ("NUMBER");
                 break;
 
-            case RenameMode.TEXT:
-                mode_stack.set_visible_child_name ("TEXT");
+            case RenameMode.LETTER:
+                mode_stack.set_visible_child_name ("LETTER");
                 break;
 
             case RenameMode.DATETIME:
@@ -296,18 +339,33 @@ public class Modifier : Gtk.ListBoxRow {
         update_request ();
     }
 
+    private string current_letter_seq;
     public string rename (string input, int index) {
         var seq = index + (int)(start_number_spin_button.get_value ());
+        if (index == 0) {
+            if (upper_case_switch.active) {
+               current_letter_seq = letter_sequence_entry.text.up ();
+            } else {
+               current_letter_seq = letter_sequence_entry.text.down ();
+            }
+
+            letter_sequence_entry.text = current_letter_seq;
+        }
         string new_text = "";
 
         switch (mode_combo.get_active ()) {
+            case RenameMode.TEXT:
+                new_text = text_entry.text;
+                break;
+
             case RenameMode.NUMBER:
                 var template = "%%0%id".printf ((int)(digits_spin_button.get_value ()));
                 new_text = template.printf (seq);
                 break;
 
-            case RenameMode.TEXT:
-                new_text = text_entry.text;
+            case RenameMode.LETTER:
+                new_text = current_letter_seq;
+                current_letter_seq = increment_letter_seq (current_letter_seq);
                 break;
 
             case RenameMode.DATETIME:
@@ -337,6 +395,31 @@ public class Modifier : Gtk.ListBoxRow {
         }
 
         return input;
+    }
+
+    private string increment_letter_seq (string letter_seq) {
+        assert (letter_seq.is_ascii ());
+        var sb = new StringBuilder (letter_seq);
+        bool carry = false;
+        char start = upper_case_switch.active ? 'A' : 'a';
+        char end = upper_case_switch.active ? 'Z' : 'z';
+        int i;
+        for (i = sb.data.length - 1; i >= 0; i--) {
+            if (sb.data[i] == end) {
+                sb.data[i] = start;
+                carry = true;
+            } else {
+                sb.data[i]++;
+                carry = false;
+                break;
+            }
+        }
+
+        if (carry) {
+            sb.prepend_c ('a');
+        }
+
+        return sb.str;
     }
 
     public string get_formated_date_time (DateTime? date) {
