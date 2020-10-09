@@ -95,7 +95,7 @@ It is possible to undo the last renaming while the window is open.
         );
 
         if (main_window == null) {
-            main_window = new BulkRenamer.Window (this);
+            main_window = new BulkRenamer.Window ();
 
             main_window.destroy.connect (() => {
                 main_window = null;

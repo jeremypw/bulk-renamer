@@ -98,7 +98,7 @@ public class Modifier : Gtk.ListBoxRow {
             placeholder_text = _("Start of sequence"),
             text = "a",
             input_purpose = Gtk.InputPurpose.ALPHA,
-            tooltip_text = _("Enter start of alphabetic sequence, 'A' to 'zzzz...'")
+            tooltip_text = _("Enter start of alphabetic sequence, 'A' to 'zzzz…'")
         };
 
         upper_case_switch = new Gtk.Switch () {
@@ -313,7 +313,6 @@ public class Modifier : Gtk.ListBoxRow {
             move_down_request ();
         });
 
-        bind_property ("is-first", this, "allow-remove", BindingFlags.INVERT_BOOLEAN | BindingFlags.SYNC_CREATE);
         bind_property ("is-first", move_up_button, "sensitive", BindingFlags.INVERT_BOOLEAN | BindingFlags.SYNC_CREATE);
         bind_property ("is-last", move_down_button, "sensitive", BindingFlags.INVERT_BOOLEAN | BindingFlags.SYNC_CREATE);
 
@@ -433,7 +432,7 @@ public class Modifier : Gtk.ListBoxRow {
     }
 
     private string increment_letter_seq (string letter_seq) {
-        // Before this called, letter_seq must be sanitised to be 'A' - 'zzzzz...'
+        // Before this called, letter_seq must be sanitised to be 'A' - 'zzzzz…'
         seq_builder.assign (letter_seq);
         bool carry = false;
         char start = upper_case_switch.active ? 'A' : 'a';
@@ -463,7 +462,7 @@ public class Modifier : Gtk.ListBoxRow {
         for (int i = seq_builder.data.length - 1; i >= 0; i--) {
             if (seq_builder.data[i] > end) {
                 seq_builder.data[i] = end;
-            } else if (seq_builder.data[i] < start){
+            } else if (seq_builder.data[i] < start) {
                 seq_builder.data[i] = start;
             }
         }

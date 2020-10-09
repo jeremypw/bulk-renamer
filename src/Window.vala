@@ -51,12 +51,6 @@ public class BulkRenamer.Window : Gtk.ApplicationWindow {
         action_accelerators.set (ACTION_RESTORE, "<Control>R");
     }
 
-    public Window (Gtk.Application app) {
-        Object (
-            application: app
-        );
-    }
-
     construct {
         actions = new SimpleActionGroup ();
         actions.add_action_entries (ACTION_ENTRIES, this);
@@ -83,9 +77,10 @@ public class BulkRenamer.Window : Gtk.ApplicationWindow {
         var open_button = new Gtk.Button.from_icon_name ("document-open", Gtk.IconSize.LARGE_TOOLBAR);
         open_button.action_name = ACTION_PREFIX + ACTION_OPEN;
         open_button.tooltip_markup = Granite.markup_accel_tooltip (
-            application.get_accels_for_action (open_button.action_name),
+            ((Gtk.Application)Application.get_default ()).get_accels_for_action (open_button.action_name),
             _("Select files to rename")
         );
+
         open_button.get_style_context ().add_class (Gtk.STYLE_CLASS_FLAT);
 
         header_bar.pack_start (open_button);

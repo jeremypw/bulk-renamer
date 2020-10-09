@@ -142,7 +142,8 @@ public class Renamer : Gtk.Grid {
         clear_mods_button.get_style_context ().add_class (Gtk.STYLE_CLASS_FLAT);
 
         var action_bar = new Gtk.ActionBar () {
-            margin_top = 12
+            margin_top = 12,
+            hexpand = true
         };
         action_bar.get_style_context ().add_class (Gtk.STYLE_CLASS_INLINE_TOOLBAR);
         action_bar.pack_start (add_button);
