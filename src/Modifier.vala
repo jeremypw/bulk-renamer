@@ -477,7 +477,7 @@ public class Modifier : Gtk.ListBoxRow {
     }
 
     public Variant to_variant () {
-        VariantBuilder vb = new VariantBuilder (new VariantType ("((is)is(ii)(ix)s)"));
+        VariantBuilder vb = new VariantBuilder (new VariantType ("((is)is(ii)sb(ix)s)"));
 
         //Suffix/Prefix/Replace (string) combo - enum - type "(is)"
         vb.open (new VariantType ("(is)"));
@@ -502,6 +502,10 @@ public class Modifier : Gtk.ListBoxRow {
         }
 
         vb.close ();
+
+        //LetterSequencesource - string - type "s"
+        vb.add ("s", mode_combo.active == RenameMode.LETTER ? letter_sequence_entry.text : "");
+        vb.add ("b", upper_case_switch.active);
 
         //DateSequence format/startdatetime enum/int64 - "(ix)"
         vb.open (new VariantType ("(ix)"));
@@ -539,6 +543,7 @@ public class Modifier : Gtk.ListBoxRow {
         //Suffix/Prefix/Replace (string) combo - enum - type "(is)"
         int active;
         string text;
+        bool upper_case;
         iter.next ("(is)", out active, out text);
         position_combo.active = active.clamp (0, 2);
         search_entry.text = text;
@@ -556,6 +561,14 @@ public class Modifier : Gtk.ListBoxRow {
         iter.next ("(ii)", out start, out digits);
         start_number_spin_button.@value = (double)(start.clamp (0, int.MAX));
         digits_spin_button.@value = (double)(digits.clamp (0, 5));
+
+        //LetterSequencesource - string - type "s"
+        iter.next ("s", out text);
+        letter_sequence_entry.text = text;
+
+        //Uppercase - boolean - type "b"
+        iter.next ("b", out upper_case);
+        upper_case_switch.active = upper_case;
 
         //DateSequence format/startdatetime enum/int64 - "(ix)"
         int64 start_unix;
