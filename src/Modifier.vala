@@ -32,6 +32,7 @@ public class Modifier : Gtk.ListBoxRow {
     private Gtk.Entry text_entry;
     private Gtk.Entry letter_sequence_entry;
     private Gtk.Switch upper_case_switch;
+    private StringBuilder seq_builder;
     private Gtk.Entry separator_entry;
     private Gtk.Entry search_entry;
     private Gtk.Revealer remove_revealer;
@@ -90,10 +91,13 @@ public class Modifier : Gtk.ListBoxRow {
         digits_grid.add (digits_label);
         digits_grid.add (digits_spin_button);
 
+        seq_builder = new StringBuilder ();
+
         letter_sequence_entry = new Gtk.Entry () {
-            placeholder_text = _("Starting alphanumeric sequence"),
+            placeholder_text = _("Start of sequence"),
             text = "a",
-            input_purpose = Gtk.InputPurpose.ALPHA
+            input_purpose = Gtk.InputPurpose.ALPHA,
+            tooltip_text = _("Enter start of alphabetic sequence, 'A' to 'zzzz...'")
         };
 
         upper_case_switch = new Gtk.Switch () {
@@ -349,7 +353,10 @@ public class Modifier : Gtk.ListBoxRow {
                current_letter_seq = letter_sequence_entry.text.down ();
             }
 
+            var pos = letter_sequence_entry.get_position ();
+            current_letter_seq = sanitise_letter_sequence (current_letter_seq);
             letter_sequence_entry.text = current_letter_seq;
+            letter_sequence_entry.set_position (pos);
         }
         string new_text = "";
 
@@ -398,28 +405,42 @@ public class Modifier : Gtk.ListBoxRow {
     }
 
     private string increment_letter_seq (string letter_seq) {
-        assert (letter_seq.is_ascii ());
-        var sb = new StringBuilder (letter_seq);
+        // Before this called, letter_seq must be sanitised to be 'A' - 'zzzzz...'
+        seq_builder.assign (letter_seq);
         bool carry = false;
         char start = upper_case_switch.active ? 'A' : 'a';
         char end = upper_case_switch.active ? 'Z' : 'z';
-        int i;
-        for (i = sb.data.length - 1; i >= 0; i--) {
-            if (sb.data[i] == end) {
-                sb.data[i] = start;
+        for (int i = seq_builder.data.length - 1; i >= 0; i--) {
+            if (seq_builder.data[i] == end) {
+                seq_builder.data[i] = start;
                 carry = true;
             } else {
-                sb.data[i]++;
+                seq_builder.data[i]++;
                 carry = false;
                 break;
             }
         }
 
         if (carry) {
-            sb.prepend_c ('a');
+            seq_builder.prepend_c (start);
         }
 
-        return sb.str;
+        return seq_builder.str;
+    }
+
+    private string sanitise_letter_sequence (string seq) {
+        seq_builder.assign (seq);
+        char start = upper_case_switch.active ? 'A' : 'a';
+        char end = upper_case_switch.active ? 'Z' : 'z';
+        for (int i = seq_builder.data.length - 1; i >= 0; i--) {
+            if (seq_builder.data[i] > end) {
+                seq_builder.data[i] = end;
+            } else if (seq_builder.data[i] < start){
+                seq_builder.data[i] = start;
+            }
+        }
+
+        return seq_builder.str;
     }
 
     public string get_formated_date_time (DateTime? date) {
