@@ -4,12 +4,36 @@
 Bulk file renamer providing a contractor plugin for Pantheon Files, the elementaryos file browser.
 It may also be used as a stand-alone app or from the commandline.
 
-Currently supports three different rename modes:
-* adding numbers to the original name or to a new base.
-* appending the date to the original name
-* search and replace.
+The starting point may either be the original filename or a constant basename.
+The starting point may be modified by -
 
-The file extension is excluded from renaming.
+* adding constant text
+* adding a number sequence with a chosen start number and number of digits
+* adding a letter sequence with chosen start letters
+* adding a chosen date with or without a time
+
+In each case the added characters may be prepended, appended, or may replace an existing character sequence.
+When prepending or appending, an arbitrary separator may be specified.
+
+Multiple such modifications may be made.
+
+The order in which the files are modified may be -
+
+* by name
+* by creation date
+* by modification date
+
+In each case the order may be reversed.
+
+The file extension is usually excluded from renaming but there is an option to include it in replacement modifications.
+
+The renaming may be undone if the app has not been closed or reconfigured in the meantime.
+
+The modification settings are saved and restored on closing and opening the app.
+
+A contractor is provided for the elementaryos Files app so it can be used from the selection context menu.
+
+Files can also be drag/dropped into the app for renaming or chosen with a FileChooser dialog.
 
 ![Screenshot](/data/Screenshots/mainwindow.png?raw=true "Screenshot")
 
