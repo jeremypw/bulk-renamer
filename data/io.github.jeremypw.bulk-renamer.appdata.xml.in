@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <component type="desktop">
-    <id>com.github.jeremypw.bulk-renamer</id>
+    <id>io.github.jeremypw.bulk-renamer</id>
     <metadata_license>CC-BY-SA-3.0</metadata_license>
     <project_group>jeremypw</project_group>
     <project_license>GPL-3.0+</project_license>
@@ -73,7 +73,7 @@
         </release>
     </releases>
     <provides>
-        <binary>com.github.jeremypw.bulk-renamer</binary>
+        <binary>io.github.jeremypw.bulk-renamer</binary>
     </provides>
     <screenshots>
         <screenshot type="default">
