@@ -22,6 +22,11 @@
 */
 
 public class BulkRenamer.Window : Gtk.ApplicationWindow {
+    public const string PALE_TEXT = "#fafafa"; /* Elementary Silver 100 */
+    public const string GNONOGRAMS_DARK_PURPLE = "#180297"; /* Gnonograms Dark Purple */
+    public const string GNONOGRAMS_PALE_PURPLE = "#cdc9e0"; /* Gnonograms Pale Purple */
+    public const string DARK_SHADOW = "#1a1a1a"; /* Elementary Black 700 */
+
     private Renamer renamer;
     public SimpleActionGroup actions { get; construct; }
     public const string ACTION_PREFIX = "win.";
@@ -41,6 +46,36 @@ public class BulkRenamer.Window : Gtk.ApplicationWindow {
     public static Gee.MultiMap<string, string> action_accelerators = new Gee.HashMultiMap<string, string> ();
     private static Settings app_settings;
 
+    private string brand_stylesheet = """
+        @define-color textColorPrimary %s;
+        @define-color textColorPrimaryShadow %s;
+        @define-color colorPrimary %s;
+        @define-color colorDarkBackground %s;
+        @define-color colorPaleBackground %s;
+
+        .headerbutton {
+            border-radius: 12px 12px 12px 12px;
+            background-color: alpha (#FFF, 0.75);
+        }
+
+        .title {
+            border-radius: 12px 12px 12px 12px;
+            background-color: alpha (#FFF, 0.75);
+            color: #1a1a1a;
+            font-size: 16px;
+        }
+
+        tooltip {
+            background-color: #180297;
+            border-radius: 4px 4px 4px 4px;
+        }
+    """
+    .printf (PALE_TEXT,
+            DARK_SHADOW,
+            GNONOGRAMS_DARK_PURPLE,
+            GNONOGRAMS_DARK_PURPLE,
+            GNONOGRAMS_PALE_PURPLE);
+
     static construct {
         app_settings = BulkRenamer.App.app_settings;
 
@@ -52,6 +87,14 @@ public class BulkRenamer.Window : Gtk.ApplicationWindow {
     }
 
     construct {
+        var provider = new Gtk.CssProvider ();
+        try {
+            provider.load_from_data (brand_stylesheet, -1);
+            Gtk.StyleContext.add_provider_for_screen (get_screen (), provider, Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION);
+        } catch (Error e) {
+            warning ("Could not create CSS Provider: %s", e.message);
+        }
+
         actions = new SimpleActionGroup ();
         actions.add_action_entries (ACTION_ENTRIES, this);
         insert_action_group ("win", actions);
@@ -63,25 +106,34 @@ public class BulkRenamer.Window : Gtk.ApplicationWindow {
             ((Gtk.Application)Application.get_default ()).set_accels_for_action (ACTION_PREFIX + action, accels_array);
         }
 
-        title = _("Bulk Renamer");
+        var title_label = new Gtk.Label (" " + _("Bulk Renamer") + " ");
+        title_label.get_style_context ().add_class ("title");
+        title_label.show ();
 
         renamer = new Renamer ();
         renamer.margin = 12;
 
         var header_bar = new Gtk.HeaderBar () {
-            title = _("Bulk Renamer"),
             show_close_button = true,
             has_subtitle = false
         };
 
-        var open_button = new Gtk.Button.from_icon_name ("document-open", Gtk.IconSize.LARGE_TOOLBAR);
-        open_button.action_name = ACTION_PREFIX + ACTION_OPEN;
+        header_bar.get_style_context ().add_class ("default-decoration");
+        header_bar.get_style_context ().add_class ("headerbar");
+        header_bar.set_custom_title (title_label);
+
+        var open_button = new Gtk.Button.from_icon_name ("document-open", Gtk.IconSize.LARGE_TOOLBAR) {
+            action_name = ACTION_PREFIX + ACTION_OPEN,
+            margin = 3
+        };
+
         open_button.tooltip_markup = Granite.markup_accel_tooltip (
             ((Gtk.Application)Application.get_default ()).get_accels_for_action (open_button.action_name),
-            _("Select files to rename")
-        );
+            _("Select files to rename"));
 
+        open_button.get_style_context ().add_class ("headerbutton");
         open_button.get_style_context ().add_class (Gtk.STYLE_CLASS_FLAT);
+
 
         header_bar.pack_start (open_button);
 
